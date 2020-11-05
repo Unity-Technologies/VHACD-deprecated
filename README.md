@@ -30,11 +30,5 @@ A second approach consists in computing an exact convex decomposition of a surfa
 | minVolumePerCH | controls the adaptive sampling of the generated convex-hulls | 0.0001 | 0.0-0.01 |
 
 
-```
 
-# More approximate convex decomposition results
-![V-HACD Results (1/4)](https://raw.githubusercontent.com/kmammou/v-hacd/master/doc/snapshots_1.png)
-![V-HACD Results (2/4)](https://raw.githubusercontent.com/kmammou/v-hacd/master/doc/snapshots_2.png)
-![V-HACD Results (3/4)](https://raw.githubusercontent.com/kmammou/v-hacd/master/doc/snapshots_3.png)
-![V-HACD Results (4/4)](https://raw.githubusercontent.com/kmammou/v-hacd/master/doc/snapshots_4.png)
 
