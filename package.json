@@ -3,7 +3,7 @@
   "displayName": "VHACD",
   "name": "com.unity.robotics.VHACD",
   "unity": "2020.2",
-  "unityRelease": "0b9"
+  "unityRelease": "0b9",
   "dependencies": {
   }
  }
