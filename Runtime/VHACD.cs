@@ -4,7 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using UnityEngine;
 
-namespace Mesh
+namespace MeshProcess
 {
     public class VHACD : MonoBehaviour
     {
