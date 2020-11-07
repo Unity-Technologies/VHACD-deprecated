@@ -1,9 +1,0 @@
-{
-  "description": "Package for converting a mesh into a convex mesh to the physics engine to detect collisions between two different non-primitive meshes.",
-  "displayName": "VHACD",
-  "name": "com.unity.robotics.VHACD",
-  "unity": "2020.2",
-  "unityRelease": "0b9",
-  "dependencies": {
-  }
- }
