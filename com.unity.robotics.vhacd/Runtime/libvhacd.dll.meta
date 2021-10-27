@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 93026905049f20e40b08aa302b05678b
+guid: 4d1723769ada3482b80ae4dd6837ab53
 PluginImporter:
   externalObjects: {}
   serializedVersion: 2
@@ -18,10 +18,10 @@ PluginImporter:
       settings:
         Exclude Editor: 0
         Exclude Linux64: 0
-        Exclude OSXUniversal: 1
+        Exclude OSXUniversal: 0
         Exclude WebGL: 1
         Exclude Win: 1
-        Exclude Win64: 1
+        Exclude Win64: 0
         Exclude WindowsStoreApps: 1
   - first:
       Any: 
@@ -35,7 +35,7 @@ PluginImporter:
       settings:
         CPU: x86_64
         DefaultValueInitialized: true
-        OS: Linux
+        OS: Windows
   - first:
       Standalone: Linux64
     second:
@@ -45,33 +45,28 @@ PluginImporter:
   - first:
       Standalone: OSXUniversal
     second:
-      enabled: 0
+      enabled: 1
       settings:
-        CPU: None
+        CPU: AnyCPU
   - first:
       Standalone: Win
     second:
       enabled: 0
       settings:
-        CPU: AnyCPU
+        CPU: None
   - first:
       Standalone: Win64
     second:
-      enabled: 0
+      enabled: 1
       settings:
         CPU: AnyCPU
-  - first:
-      WebGL: WebGL
-    second:
-      enabled: 0
-      settings: {}
   - first:
       Windows Store Apps: WindowsStoreApps
     second:
       enabled: 0
       settings:
         CPU: X86
-        DontProcess: true
+        DontProcess: false
         PlaceholderPath: 
         SDK: AnySDK
         ScriptingBackend: AnyScriptingBackend

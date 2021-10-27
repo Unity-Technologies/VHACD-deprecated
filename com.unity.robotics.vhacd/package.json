@@ -1,0 +1,8 @@
+{
+  "name": "com.unity.robotics.vhacd",
+  "version": "0.0.1-preview",
+  "displayName": "VHACD",
+  "description": "",
+  "unity": "2020.3",
+  "unityRelease": "19f1"
+}
