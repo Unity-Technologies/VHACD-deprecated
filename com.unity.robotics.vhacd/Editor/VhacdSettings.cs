@@ -13,7 +13,10 @@ namespace MeshProcess
 
         public FileExtension FileType { get; set; } = FileExtension.Prefab;
         public string AssetPath { get; set; } = string.Empty;
+        public bool OverwriteMeshComponents { get; set; } = true;
         public bool OverwriteAssets { get; set; } = true;
+        public string AssetSavePath { get; set; } = "Assets/Prefabs";
+        public string MeshSavePath { get; set; } = "Assets/Meshes";
         public int AssetsConverted { get; set; }
         public int TotalAssets { get; set; }
         public string CurrentFile { get; set; } = string.Empty;

@@ -6,6 +6,7 @@ using System.Linq;
 using Unity.EditorCoroutines.Editor;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.PlayerLoop;
 
 namespace MeshProcess
 {
@@ -14,21 +15,58 @@ namespace MeshProcess
         VhacdSettings m_Settings = new VhacdSettings();
         bool m_ShowBar;
 
+        void Awake()
+        {
+            titleContent = new GUIContent("VHACD Generation Settings");
+        }
+
         void OnGUI()
         {
+            // Asset directory selection
             EditorGUILayout.BeginHorizontal();
-            GUILayout.Label(string.IsNullOrEmpty(m_Settings.AssetPath) ? m_Settings.AssetPath : "Select a directory");
+            GUILayout.Label(!string.IsNullOrEmpty(m_Settings.AssetPath) ? m_Settings.AssetPath : "Select a directory");
             if (GUILayout.Button("Select Directory"))
+            {
                 m_Settings.AssetPath = EditorUtility.OpenFolderPanel("Select Asset Directory", "Assets", "");
-
+                m_Settings.MeshSavePath = $"{m_Settings.AssetPath.Substring(Application.dataPath.Length - "Assets".Length)}/Meshes";
+            }
             EditorGUILayout.EndHorizontal();
-            EditorGUILayout.BeginHorizontal();
+
+            // File extension selection
             m_Settings.FileType =
                 (VhacdSettings.FileExtension)EditorGUILayout.EnumPopup("Select Filetype", m_Settings.FileType);
+
+            // Mesh save directory
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.Label(!string.IsNullOrEmpty(m_Settings.MeshSavePath) ? m_Settings.MeshSavePath : "Select a directory");
+            if (GUILayout.Button("Select Directory"))
+            {
+                var tmpMeshSavePath = EditorUtility.OpenFolderPanel("Select Mesh Save Directory", "Assets", "");
+                m_Settings.MeshSavePath = tmpMeshSavePath.Substring(Application.dataPath.Length - "Assets".Length);
+            }
             EditorGUILayout.EndHorizontal();
 
-            m_Settings.OverwriteAssets = GUILayout.Toggle(m_Settings.OverwriteAssets, "Overwrite existing assets?");
+            // Bool settings
+            m_Settings.OverwriteMeshComponents = GUILayout.Toggle(m_Settings.OverwriteMeshComponents, "Overwrite any existing collider components?");
 
+            if (m_Settings.FileType == VhacdSettings.FileExtension.Prefab)
+            {
+                m_Settings.OverwriteAssets = GUILayout.Toggle(m_Settings.OverwriteAssets, "Overwrite existing assets?");
+            }
+            if ((m_Settings.FileType == VhacdSettings.FileExtension.Prefab && !m_Settings.OverwriteAssets) || m_Settings.FileType != VhacdSettings.FileExtension.Prefab)
+            {
+                EditorGUILayout.BeginHorizontal();
+                GUILayout.Label(!string.IsNullOrEmpty(m_Settings.AssetSavePath) ? m_Settings.AssetSavePath : "Select a directory");
+                if (GUILayout.Button("Select Directory"))
+                {
+                    var tmpAssetSavePath = EditorUtility.OpenFolderPanel("Select Save Directory", "Assets", "");
+                    m_Settings.AssetSavePath = tmpAssetSavePath.Substring(Application.dataPath.Length - "Assets".Length);
+                }
+                EditorGUILayout.EndHorizontal();
+            }
+
+
+            // Generate
             if (!string.IsNullOrEmpty(m_Settings.AssetPath) && Directory.Exists(m_Settings.AssetPath))
             {
                 var fileEnumerable = Directory.EnumerateFiles(m_Settings.AssetPath,
@@ -47,20 +85,25 @@ namespace MeshProcess
                 m_ShowBar = false;
             }
 
-
+            // Progress bar
             if (m_ShowBar && m_Settings.TotalAssets > 0)
             {
-                var progress = m_Settings.AssetsConverted / m_Settings.TotalAssets;
-                GUILayout.Label(
-                    $"Converting asset {m_Settings.AssetsConverted} of {m_Settings.TotalAssets} => {m_Settings.CurrentFile}");
-                EditorGUI.ProgressBar(new Rect(3, 100, position.width - 6, 25), progress,
-                    $"{m_Settings.AssetsConverted}/{m_Settings.TotalAssets} Assets Converted");
-                if (Math.Abs(progress - 1) < 0.01f)
-                {
-                    Close();
-                    m_Settings.TotalAssets = 0;
-                    m_ShowBar = false;
-                }
+                UpdateProgressBar();
+            }
+        }
+
+        void UpdateProgressBar()
+        {
+            var progress = m_Settings.AssetsConverted / m_Settings.TotalAssets;
+            GUILayout.Label(
+                $"Converting asset {m_Settings.AssetsConverted} of {m_Settings.TotalAssets} => {m_Settings.CurrentFile}");
+            EditorGUI.ProgressBar(new Rect(3, 100, position.width - 6, 25), progress,
+                $"{m_Settings.AssetsConverted}/{m_Settings.TotalAssets} Assets Converted");
+            if (Math.Abs(progress - 1) < 0.01f)
+            {
+                Close();
+                m_Settings.TotalAssets = 0;
+                m_ShowBar = false;
             }
         }
 
@@ -109,14 +152,14 @@ namespace MeshProcess
                 foreach (var collider in colliderMeshes)
                 {
                     meshIndex++;
-                    var path = $"Assets/Meshes/{templateFileName}/{meshIndex}.asset";
+                    var path = $"{m_Settings.MeshSavePath}/{templateFileName}/{meshIndex}.asset";
                     Directory.CreateDirectory(Path.GetDirectoryName(path) ?? throw new InvalidOperationException());
 
                     // Only create new asset if one doesn't exist or should overwrite
                     AssetDatabase.CreateAsset(collider, path);
                     AssetDatabase.SaveAssets();
 
-                    if (m_Settings.OverwriteAssets)
+                    if (m_Settings.OverwriteMeshComponents)
                     {
                         var existingColliders = child.GetComponents<MeshCollider>();
                         if (existingColliders.Length > 0)
@@ -140,11 +183,11 @@ namespace MeshProcess
 
             var localPath = prefabPath;
 
-            if (!m_Settings.OverwriteAssets)
+            if (!m_Settings.OverwriteAssets || m_Settings.FileType != VhacdSettings.FileExtension.Prefab)
             {
-                Directory.CreateDirectory("Assets/Prefabs/");
+                Directory.CreateDirectory(m_Settings.AssetSavePath);
 
-                localPath = "Assets/Prefabs/" + templateFileName + ".prefab";
+                localPath = $"{m_Settings.AssetSavePath}/{templateFileName}.prefab";
 
                 // Make sure the file name is unique, in case an existing Prefab has the same name.
                 localPath = AssetDatabase.GenerateUniqueAssetPath(localPath);

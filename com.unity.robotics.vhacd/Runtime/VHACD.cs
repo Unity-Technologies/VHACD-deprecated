@@ -31,59 +31,59 @@ namespace MeshProcess
                 m_projectHullVertices = true; // This will project the output convex hull vertices onto the original source mesh to increase the floating point accuracy of the results
             }
 
-            [Tooltip("maximum concavity")]
-            [Range(0, 1)]
-            public double m_concavity;
+[Tooltip("maximum concavity")]
+[Range(0, 1)]
+public double m_concavity;
 
-            [Tooltip("controls the bias toward clipping along symmetry planes")]
-            [Range(0, 1)]
-            public double m_alpha;
+[Tooltip("controls the bias toward clipping along symmetry planes")]
+[Range(0, 1)]
+public double m_alpha;
 
-            [Tooltip("controls the bias toward clipping along revolution axes")]
-            [Range(0, 1)]
-            public double m_beta;
+[Tooltip("controls the bias toward clipping along revolution axes")]
+[Range(0, 1)]
+public double m_beta;
 
-            [Tooltip("controls the adaptive sampling of the generated convex-hulls")]
-            [Range(0, 0.01f)]
-            public double m_minVolumePerCH;
+[Tooltip("controls the adaptive sampling of the generated convex-hulls")]
+[Range(0, 0.01f)]
+public double m_minVolumePerCH;
 
-            public void* m_callback;
-            public void* m_logger;
+public void* m_callback;
+public void* m_logger;
 
-            [Tooltip("maximum number of voxels generated during the voxelization stage")]
-            [Range(10000, 64000000)]
-            public uint m_resolution;
+[Tooltip("maximum number of voxels generated during the voxelization stage")]
+[Range(10000, 64000000)]
+public uint m_resolution;
 
-            [Tooltip("controls the maximum number of triangles per convex-hull")]
-            [Range(4, 1024)]
-            public uint m_maxNumVerticesPerCH;
+[Tooltip("controls the maximum number of triangles per convex-hull")]
+[Range(4, 1024)]
+public uint m_maxNumVerticesPerCH;
 
-            [Tooltip("controls the granularity of the search for the \"best\" clipping plane")]
-            [Range(1, 16)]
-            public uint m_planeDownsampling;
+[Tooltip("controls the granularity of the search for the \"best\" clipping plane")]
+[Range(1, 16)]
+public uint m_planeDownsampling;
 
-            [Tooltip("controls the precision of the convex-hull generation process during the clipping plane selection stage")]
-            [Range(1, 16)]
-            public uint m_convexhullDownsampling;
+[Tooltip("controls the precision of the convex-hull generation process during the clipping plane selection stage")]
+[Range(1, 16)]
+public uint m_convexhullDownsampling;
 
-            [Tooltip("enable/disable normalizing the mesh before applying the convex decomposition")]
-            [Range(0, 1)]
-            public uint m_pca;
+[Tooltip("enable/disable normalizing the mesh before applying the convex decomposition")]
+[Range(0, 1)]
+public uint m_pca;
 
-            [Tooltip("0: voxel-based (recommended), 1: tetrahedron-based")]
-            [Range(0, 1)]
-            public uint m_mode;
+[Tooltip("0: voxel-based (recommended), 1: tetrahedron-based")]
+[Range(0, 1)]
+public uint m_mode;
 
-            [Range(0, 1)]
-            public uint m_convexhullApproximation;
+[Range(0, 1)]
+public uint m_convexhullApproximation;
 
-            [Range(0, 1)]
-            public uint m_oclAcceleration;
-            
-            public uint m_maxConvexHulls;
+[Range(0, 1)]
+public uint m_oclAcceleration;
 
-            [Tooltip("This will project the output convex hull vertices onto the original source mesh to increase the floating point accuracy of the results")]
-            public bool m_projectHullVertices;
+public uint m_maxConvexHulls;
+
+[Tooltip("This will project the output convex hull vertices onto the original source mesh to increase the floating point accuracy of the results")]
+public bool m_projectHullVertices;
         };
 
         unsafe struct ConvexHull
@@ -183,7 +183,7 @@ namespace MeshProcess
                 Marshal.Copy((System.IntPtr)hull.m_triangles, indices, 0, indices.Length);
                 hullMesh.SetTriangles(indices, 0);
 
-                
+
                 convexMesh.Add(hullMesh);
             }
             return convexMesh;
