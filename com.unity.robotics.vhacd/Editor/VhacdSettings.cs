@@ -22,6 +22,7 @@ namespace MeshProcess
         public string CurrentFile { get; set; } = string.Empty;
         public int MeshCountChild { get; set; }
         public int MeshCountTotal { get; set; }
+        public VHACD.Parameters Parameters { get; set; } = new VHACD.Parameters();
 
         public static string GetFileExtensionString(FileExtension ext)
         {
