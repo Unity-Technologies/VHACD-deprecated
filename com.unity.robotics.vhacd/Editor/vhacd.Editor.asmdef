@@ -1,12 +1,12 @@
 {
-    "name": "vhacd",
-    "rootNamespace": "VHACD",
-    "references": [],
+    "name": "vhacd.Editor",
+    "rootNamespace": "vhacd.Editor",
+    "references": [
+        "GUID:b0dc65aa46d174cbab72d2bfef413320",
+        "GUID:478a2357cc57436488a56e564b08d223"
+    ],
     "includePlatforms": [
-        "Editor",
-        "LinuxStandalone64",
-        "macOSStandalone",
-        "WindowsStandalone64"
+        "Editor"
     ],
     "excludePlatforms": [],
     "allowUnsafeCode": true,
