@@ -45,10 +45,11 @@ namespace MeshProcess
             {
                 m_Settings.AssetPath = EditorUtility.OpenFolderPanel("Select Asset Directory", "Assets", "");
                 if (!string.IsNullOrEmpty(m_Settings.AssetPath))
+                {
                     m_Settings.MeshSavePath =
                         $"{m_Settings.AssetPath.Substring(Application.dataPath.Length - "Assets".Length)}/Meshes";
+                }
             }
-
             EditorGUILayout.EndHorizontal();
 
             // File extension selection
@@ -64,7 +65,9 @@ namespace MeshProcess
             {
                 var tmpMeshSavePath = EditorUtility.OpenFolderPanel("Select Mesh Save Directory", "Assets", "");
                 if (!string.IsNullOrEmpty(tmpMeshSavePath))
+                {
                     m_Settings.MeshSavePath = tmpMeshSavePath.Substring(Application.dataPath.Length - "Assets".Length);
+                }
             }
 
             EditorGUILayout.EndHorizontal();
@@ -72,9 +75,11 @@ namespace MeshProcess
             // Bool settings
             m_Settings.OverwriteMeshComponents = GUILayout.Toggle(m_Settings.OverwriteMeshComponents,
                 "Overwrite any existing collider components?");
-
             if (m_Settings.FileType == VhacdSettings.FileExtension.Prefab)
+            {
                 m_Settings.OverwriteAssets = GUILayout.Toggle(m_Settings.OverwriteAssets, "Overwrite existing assets?");
+            }
+
             if (m_Settings.FileType == VhacdSettings.FileExtension.Prefab && !m_Settings.OverwriteAssets ||
                 m_Settings.FileType != VhacdSettings.FileExtension.Prefab)
             {
@@ -86,8 +91,10 @@ namespace MeshProcess
                 {
                     var tmpAssetSavePath = EditorUtility.OpenFolderPanel("Select Save Directory", "Assets", "");
                     if (!string.IsNullOrEmpty(tmpAssetSavePath))
+                    {
                         m_Settings.AssetSavePath =
                             tmpAssetSavePath.Substring(Application.dataPath.Length - "Assets".Length);
+                    }
                 }
 
                 EditorGUILayout.EndHorizontal();
@@ -106,7 +113,9 @@ namespace MeshProcess
                 GUILayout.Label($"Assets found in directory: {m_Settings.TotalAssets}");
 
                 if (GUILayout.Button("Generate!"))
-                    EditorCoroutineUtility.StartCoroutine(OpenFilePanel(fileEnumerable), this);
+                {
+                    EditorCoroutineUtility.StartCoroutine(OpenFiles(fileEnumerable), this);
+                }
             }
             else
             {
@@ -115,7 +124,10 @@ namespace MeshProcess
             }
 
             // Progress bar
-            if (m_ShowBar && m_Settings.TotalAssets > 0) UpdateProgressBar();
+            if (m_ShowBar && m_Settings.TotalAssets > 0)
+            {
+                UpdateProgressBar();
+            }
         }
 
         void UpdateProgressBar()
@@ -133,7 +145,7 @@ namespace MeshProcess
             }
         }
 
-        IEnumerator OpenFilePanel(IEnumerable<string> fileEnumerable)
+        IEnumerator OpenFiles(IEnumerable<string> fileEnumerable)
         {
             m_Settings.AssetsConverted = 0;
 
@@ -174,6 +186,7 @@ namespace MeshProcess
                 var decomposer = ConfigureVhacd(child);
                 yield return new WaitForEndOfFrame();
                 var colliderMeshes = decomposer.GenerateConvexMeshes(meshFilter.sharedMesh);
+                Debug.Log($"adding {colliderMeshes.Count} to {child.name}");
                 yield return new WaitForEndOfFrame();
                 foreach (var collider in colliderMeshes)
                 {
@@ -185,15 +198,15 @@ namespace MeshProcess
                     AssetDatabase.CreateAsset(collider, path);
                     AssetDatabase.SaveAssets();
 
-                    if (m_Settings.OverwriteMeshComponents)
-                    {
-                        var existingColliders = child.GetComponents<MeshCollider>();
-                        if (existingColliders.Length > 0)
-                        {
-                            Debug.Log($"{child.name} had existing colliders; overwriting!");
-                            foreach (var coll in existingColliders) DestroyImmediate(coll);
-                        }
-                    }
+                    // if (m_Settings.OverwriteMeshComponents)
+                    // {
+                    //     var existingColliders = child.GetComponents<MeshCollider>();
+                    //     if (existingColliders.Length > 0)
+                    //     {
+                    //         Debug.Log($"{child.name} had existing colliders; overwriting!");
+                    //         foreach (var coll in existingColliders) DestroyImmediate(coll);
+                    //     }
+                    // }
 
                     var current = child.AddComponent<MeshCollider>();
                     current.sharedMesh = collider;
@@ -280,7 +293,7 @@ namespace MeshProcess
                     "Precision of the convex-hull generation process during the clipping plane selection stage"),
                 (int)m_Parameters.m_convexhullDownsampling, 1, 16);
             m_Parameters.m_pca = (uint)EditorGUILayout.IntSlider(
-                new GUIContent("PCA", "enable/disable normalizing the mesh before applying the convex decomposition"),
+                new GUIContent("PCA", "Enable/disable normalizing the mesh before applying the convex decomposition"),
                 (int)m_Parameters.m_pca, 0, 1);
             m_Parameters.m_mode = (uint)EditorGUILayout.IntSlider(
                 new GUIContent("Mode", "0: voxel-based (recommended), 1: tetrahedron-based"), (int)m_Parameters.m_mode,
@@ -289,8 +302,9 @@ namespace MeshProcess
                 new GUIContent("ConvexhullApproximation", ""), (int)m_Parameters.m_convexhullApproximation, 0, 1);
             m_Parameters.m_oclAcceleration = (uint)EditorGUILayout.IntSlider(new GUIContent("OclAcceleration", ""),
                 (int)m_Parameters.m_oclAcceleration, 0, 1);
-            m_Parameters.m_maxConvexHulls = (uint)EditorGUILayout.IntSlider(new GUIContent("MaxConvexHulls", ""),
-                (int)m_Parameters.m_maxConvexHulls, 0, 1);
+            m_Parameters.m_maxConvexHulls = (uint)EditorGUILayout.IntField("Max Convex Hulls", (int)m_Parameters.m_maxConvexHulls);
+            // m_Parameters.m_maxConvexHulls = (uint)EditorGUILayout.IntSlider(new GUIContent("MaxConvexHulls", ""),
+            //     (int)m_Parameters.m_maxConvexHulls, 0, 1);
             m_Parameters.m_projectHullVertices = EditorGUILayout.Toggle(
                 new GUIContent("ProjectHullVertices",
                     "This will project the output convex hull vertices onto the original source mesh to increase the floating point accuracy of the results"),
