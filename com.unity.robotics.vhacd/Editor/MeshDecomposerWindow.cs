@@ -108,7 +108,7 @@ namespace MeshProcess
             if (!string.IsNullOrEmpty(m_Settings.AssetPath) && Directory.Exists(m_Settings.AssetPath))
             {
                 var fileEnumerable = Directory.EnumerateFiles(m_Settings.AssetPath,
-                    $"*{VhacdSettings.GetFileExtensionString(m_Settings.FileType)}", SearchOption.AllDirectories);
+                    $"*.{VhacdSettings.GetFileExtensionString(m_Settings.FileType)}", SearchOption.AllDirectories);
                 m_Settings.TotalAssets = fileEnumerable.Count();
                 GUILayout.Label($"Assets found in directory: {m_Settings.TotalAssets}");
 

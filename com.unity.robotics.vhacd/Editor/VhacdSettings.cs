@@ -26,7 +26,7 @@ namespace MeshProcess
 
         public static string GetFileExtensionString(FileExtension ext)
         {
-            return $".{ext.ToString().ToLower()}";
+            return $"{ext.ToString().ToLower()}";
         }
     }
 }
