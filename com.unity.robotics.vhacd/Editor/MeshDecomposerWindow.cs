@@ -186,7 +186,6 @@ namespace MeshProcess
                 var decomposer = ConfigureVhacd(child);
                 yield return new WaitForEndOfFrame();
                 var colliderMeshes = decomposer.GenerateConvexMeshes(meshFilter.sharedMesh);
-                Debug.Log($"adding {colliderMeshes.Count} to {child.name}");
                 yield return new WaitForEndOfFrame();
                 foreach (var collider in colliderMeshes)
                 {
@@ -198,15 +197,15 @@ namespace MeshProcess
                     AssetDatabase.CreateAsset(collider, path);
                     AssetDatabase.SaveAssets();
 
-                    // if (m_Settings.OverwriteMeshComponents)
-                    // {
-                    //     var existingColliders = child.GetComponents<MeshCollider>();
-                    //     if (existingColliders.Length > 0)
-                    //     {
-                    //         Debug.Log($"{child.name} had existing colliders; overwriting!");
-                    //         foreach (var coll in existingColliders) DestroyImmediate(coll);
-                    //     }
-                    // }
+                    if (m_Settings.OverwriteMeshComponents)
+                    {
+                        var existingColliders = child.GetComponents<MeshCollider>();
+                        if (existingColliders.Length > 0)
+                        {
+                            Debug.Log($"{child.name} had existing colliders; overwriting!");
+                            foreach (var coll in existingColliders) DestroyImmediate(coll);
+                        }
+                    }
 
                     var current = child.AddComponent<MeshCollider>();
                     current.sharedMesh = collider;
@@ -303,8 +302,6 @@ namespace MeshProcess
             m_Parameters.m_oclAcceleration = (uint)EditorGUILayout.IntSlider(new GUIContent("OclAcceleration", ""),
                 (int)m_Parameters.m_oclAcceleration, 0, 1);
             m_Parameters.m_maxConvexHulls = (uint)EditorGUILayout.IntField("Max Convex Hulls", (int)m_Parameters.m_maxConvexHulls);
-            // m_Parameters.m_maxConvexHulls = (uint)EditorGUILayout.IntSlider(new GUIContent("MaxConvexHulls", ""),
-            //     (int)m_Parameters.m_maxConvexHulls, 0, 1);
             m_Parameters.m_projectHullVertices = EditorGUILayout.Toggle(
                 new GUIContent("ProjectHullVertices",
                     "This will project the output convex hull vertices onto the original source mesh to increase the floating point accuracy of the results"),

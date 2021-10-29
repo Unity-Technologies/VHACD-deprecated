@@ -6,7 +6,7 @@ namespace MeshProcess
 {
     public static class MeshDecomposerMenuItem
     {
-        [MenuItem("Home Generator/Generate Collider Meshes")]
+        [MenuItem("VHACD/Generate Collider Meshes")]
         public static void OpenGenerateWindow()
         {
             // Get existing open window or if none, make a new one:
