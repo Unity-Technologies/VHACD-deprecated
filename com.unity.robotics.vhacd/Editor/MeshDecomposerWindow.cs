@@ -197,15 +197,16 @@ namespace MeshProcess
                     AssetDatabase.CreateAsset(collider, path);
                     AssetDatabase.SaveAssets();
 
-                    if (m_Settings.OverwriteMeshComponents)
-                    {
-                        var existingColliders = child.GetComponents<MeshCollider>();
-                        if (existingColliders.Length > 0)
-                        {
-                            Debug.Log($"{child.name} had existing colliders; overwriting!");
-                            foreach (var coll in existingColliders) DestroyImmediate(coll);
-                        }
-                    }
+                    // TODO
+                    // if (m_Settings.OverwriteMeshComponents)
+                    // {
+                    //     var existingColliders = child.GetComponents<MeshCollider>();
+                    //     if (existingColliders.Length > 0)
+                    //     {
+                    //         Debug.Log($"{child.name} had existing colliders; overwriting!");
+                    //         foreach (var coll in existingColliders) DestroyImmediate(coll);
+                    //     }
+                    // }
 
                     var current = child.AddComponent<MeshCollider>();
                     current.sharedMesh = collider;
