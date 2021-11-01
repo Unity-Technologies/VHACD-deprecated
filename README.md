@@ -1,3 +1,32 @@
+# VHACD
+
+[![License](https://img.shields.io/badge/license-BSD--3-green.svg)](LICENSE.md)
+![Unity](https://img.shields.io/badge/unity-2020.2+-brightgreen)
+
+---
+
+We're currently working on lots of things! Please take a short moment fill out our [survey](https://unitysoftware.co1.qualtrics.com/jfe/form/SV_0ojVkDVW0nNrHkW) to help us identify what products and packages to build next.
+
+---
+
+## Installation
+
+1. Using Unity 2020.2 or later, open the Package Manager from `Window` -> `Package Manager`.
+2. In the Package Manager window, find and click the + button in the upper lefthand corner of the window. Select `Add package from git URL....`
+
+    ![image](https://user-images.githubusercontent.com/29758400/110989310-8ea36180-8326-11eb-8318-f67ee200a23d.png)
+
+3. Enter the git URL for the desired package. Note: you can append a version tag to the end of the git url, like `#v0.4.0` or `#v0.5.0`, to declare a specific package version, or exclude the tag to get the latest from the package's `main` branch.
+
+    ```
+    https://github.com/Unity-Technologies/VHACD.git?path=/com.unity.robotics.vhacd#amanda/mesh-generator
+    ```
+4. Click `Add`.
+
+To install from a local clone of the repository, see [installing a local package](https://docs.unity3d.com/Manual/upm-ui-local.html) in the Unity manual.
+
+---
+
 # The V-HACD library decomposes a 3D surface into a set of "near" convex parts.
 
 ![Approximate convex decomposition of "Camel"](https://github.com/kmammou/v-hacd/raw/master/doc/acd.png)
