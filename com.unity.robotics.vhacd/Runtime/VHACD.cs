@@ -84,6 +84,12 @@ namespace MeshProcess
 
             [Tooltip("This will project the output convex hull vertices onto the original source mesh to increase the floating point accuracy of the results")]
             public bool m_projectHullVertices;
+
+            public override string ToString()
+            {
+                return
+                    $"m_resolution = {m_resolution}\nm_concavity = {m_concavity}\nm_planeDownsampling = {m_planeDownsampling}\nm_convexhullDownsampling = {m_convexhullDownsampling}\nm_alpha = {m_alpha}\nm_beta = {m_beta}\nm_pca = {m_pca}\nm_mode = {m_mode}\nm_maxNumVerticesPerCH = {m_maxNumVerticesPerCH}\nm_minVolumePerCH = {m_minVolumePerCH}\nm_convexhullApproximation = {m_convexhullApproximation}\nm_oclAcceleration = {m_oclAcceleration}\nm_maxConvexHulls = {m_maxConvexHulls}\nm_projectHullVertices = {m_projectHullVertices}";
+            }
         };
 
         unsafe struct ConvexHull

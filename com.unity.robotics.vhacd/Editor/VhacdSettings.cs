@@ -13,6 +13,7 @@ namespace MeshProcess
 
         public FileExtension FileType { get; set; } = FileExtension.Prefab;
         public string AssetPath { get; set; } = string.Empty;
+        public bool FromObjectField { get; set; } = false;
         public bool OverwriteMeshComponents { get; set; } = true;
         public bool OverwriteAssets { get; set; } = true;
         public string AssetSavePath { get; set; } = "Assets/Prefabs";
@@ -22,7 +23,6 @@ namespace MeshProcess
         public string CurrentFile { get; set; } = string.Empty;
         public int MeshCountChild { get; set; }
         public int MeshCountTotal { get; set; }
-        public VHACD.Parameters Parameters { get; set; } = new VHACD.Parameters();
 
         public static string GetFileExtensionString(FileExtension ext)
         {
