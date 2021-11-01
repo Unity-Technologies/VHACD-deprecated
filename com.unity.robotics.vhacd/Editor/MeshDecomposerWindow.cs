@@ -183,6 +183,15 @@ namespace MeshProcess
             foreach (var meshFilter in meshFilters)
             {
                 var child = meshFilter.gameObject;
+                if (m_Settings.OverwriteMeshComponents)
+                {
+                    var existingColliders = child.GetComponents<MeshCollider>();
+                    if (existingColliders.Length > 0)
+                    {
+                        Debug.Log($"{child.name} had existing colliders; overwriting!");
+                        foreach (var coll in existingColliders) DestroyImmediate(coll);
+                    }
+                }
                 var decomposer = ConfigureVhacd(child);
                 yield return new WaitForEndOfFrame();
                 var colliderMeshes = decomposer.GenerateConvexMeshes(meshFilter.sharedMesh);
@@ -196,17 +205,6 @@ namespace MeshProcess
                     // Only create new asset if one doesn't exist or should overwrite
                     AssetDatabase.CreateAsset(collider, path);
                     AssetDatabase.SaveAssets();
-
-                    // TODO
-                    // if (m_Settings.OverwriteMeshComponents)
-                    // {
-                    //     var existingColliders = child.GetComponents<MeshCollider>();
-                    //     if (existingColliders.Length > 0)
-                    //     {
-                    //         Debug.Log($"{child.name} had existing colliders; overwriting!");
-                    //         foreach (var coll in existingColliders) DestroyImmediate(coll);
-                    //     }
-                    // }
 
                     var current = child.AddComponent<MeshCollider>();
                     current.sharedMesh = collider;
