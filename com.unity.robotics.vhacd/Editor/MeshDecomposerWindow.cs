@@ -22,6 +22,7 @@ namespace MeshProcess
         {
             titleContent = new GUIContent("VHACD Generation Settings");
             m_Parameters = VhacdSettings.DefaultParameters();
+            m_Settings.OnModeChangeEvent += ClearWindow;
         }
 
         void OnGUI()
@@ -46,6 +47,10 @@ namespace MeshProcess
                         m_Settings.FileType = Path.GetExtension(m_Settings.AssetPath).Equals(".fbx")
                             ? VhacdSettings.FileExtension.FBX
                             : VhacdSettings.FileExtension.Prefab;
+                        if (!string.IsNullOrEmpty(m_Settings.AssetPath) && string.IsNullOrEmpty(m_Settings.MeshSavePath))
+                        {
+                            m_Settings.MeshSavePath = $"{Path.GetDirectoryName(m_Settings.AssetPath)}/Meshes";
+                        }
                     }
 
                     EditorGUILayout.EndHorizontal();
@@ -66,7 +71,8 @@ namespace MeshProcess
                         if (!string.IsNullOrEmpty(m_Settings.AssetPath))
                         {
                             m_Settings.MeshSavePath =
-                                $"{m_Settings.AssetPath.Substring(Application.dataPath.Length - "Assets".Length)}/Meshes";
+                                $"{m_Settings.AssetPath.Substring(Application.dataPath.Length - "Assets".Length)}";
+                            // m_Settings.MeshSavePath = $"{m_Settings.AssetPath}/Meshes";
                         }
                     }
                     EditorGUILayout.EndHorizontal();
@@ -185,6 +191,11 @@ namespace MeshProcess
                 }
             }
 
+            if (GUILayout.Button("Reset VHACD Parameters"))
+            {
+                m_Parameters = VhacdSettings.DefaultParameters();
+            }
+
             // Progress bar
             if (m_ShowBar && m_Settings.TotalAssets > 0 && m_Settings.GenerationMode == VhacdSettings.Mode.BatchMode)
             {
@@ -194,10 +205,19 @@ namespace MeshProcess
 
         void OnHierarchyChange()
         {
+            if (m_Settings.GenerationMode == VhacdSettings.Mode.SingleMode)
+            {
+                ResetGenerator();
+            }
+        }
+
+        void ResetGenerator()
+        {
             if (m_MeshObject == null)
             {
                 m_ObjectField = null;
                 m_Settings.AssetPath = string.Empty;
+                m_Settings.MeshSavePath = string.Empty;
                 Selection.activeObject = null;
                 DeleteDirectoryAndContents($"{m_Settings.MeshSavePath}/TEMP");
             }
@@ -208,11 +228,10 @@ namespace MeshProcess
             var progress = m_Settings.AssetsConverted / m_Settings.TotalAssets;
             GUILayout.Label(
                 $"Converting asset {m_Settings.AssetsConverted} of {m_Settings.TotalAssets} => {m_Settings.CurrentFile}");
-            EditorGUI.ProgressBar(new Rect(3, 475, position.width - 6, 25), progress,
+            EditorGUI.ProgressBar(new Rect(3, 500, position.width - 6, 25), progress,
                 $"{m_Settings.AssetsConverted}/{m_Settings.TotalAssets} Assets Converted");
             if (Math.Abs(progress - 1) < 0.01f)
             {
-                Close();
                 m_Settings.TotalAssets = 0;
                 m_ShowBar = false;
             }
@@ -279,7 +298,9 @@ namespace MeshProcess
                     meshIndex++;
                     var path = $"{m_Settings.MeshSavePath}/{m_MeshObject.name}/{meshIndex}.asset";
                     if (m_Settings.GenerationMode == VhacdSettings.Mode.SingleMode)
+                    {
                         path = $"{m_Settings.MeshSavePath}/TEMP/{m_MeshObject.name}/{meshIndex}.asset";
+                    }
                     Directory.CreateDirectory(Path.GetDirectoryName(path) ?? throw new InvalidOperationException());
 
                     // Only create new asset if one doesn't exist or should overwrite
@@ -334,7 +355,8 @@ namespace MeshProcess
             {
                 DestroyImmediate(m_MeshObject);
             }
-            OnHierarchyChange();
+
+            ResetGenerator();
         }
 
         void SavePrefab()
@@ -347,7 +369,7 @@ namespace MeshProcess
 
             if (!string.IsNullOrEmpty(localPath))
             {
-                Debug.Log($"Saving prefab at: {localPath}");
+                Debug.Log($"Saving prefab at: {localPath.Substring(Application.dataPath.Length - "Assets".Length)}");
 
                 // Move TEMP files to save location
                 Directory.Move($"{m_Settings.MeshSavePath}/TEMP", $"{m_Settings.MeshSavePath}/Meshes");
@@ -469,6 +491,12 @@ namespace MeshProcess
                 new GUIContent("ProjectHullVertices",
                     "This will project the output convex hull vertices onto the original source mesh to increase the floating point accuracy of the results"),
                 m_Parameters.m_projectHullVertices);
+        }
+
+        void OnDestroy()
+        {
+            ClearWindow();
+            m_Settings.OnModeChangeEvent -= ClearWindow;
         }
     }
 }

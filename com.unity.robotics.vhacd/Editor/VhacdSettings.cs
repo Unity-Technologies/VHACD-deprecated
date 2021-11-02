@@ -18,7 +18,19 @@ namespace MeshProcess
         }
 
         public FileExtension FileType { get; set; } = FileExtension.Prefab;
-        public Mode GenerationMode { get; set; } = Mode.SingleMode;
+        Mode m_GenerationMode = Mode.SingleMode;
+        public Mode GenerationMode
+        {
+            get => m_GenerationMode;
+            set
+            {
+                if (m_GenerationMode != value)
+                {
+                    m_GenerationMode = value;
+                    OnModeChangeEvent?.Invoke();
+                }
+            }
+        }
         public string AssetPath { get; set; } = string.Empty;
         public bool OverwriteMeshComponents { get; set; } = true;
         public bool OverwriteAssets { get; set; } = true;
@@ -29,6 +41,10 @@ namespace MeshProcess
         public string CurrentFile { get; set; } = string.Empty;
         public int MeshCountChild { get; set; }
         public int MeshCountTotal { get; set; }
+
+        public delegate void OnModeChange();
+
+        public event OnModeChange OnModeChangeEvent;
 
         public static VHACD.Parameters DefaultParameters()
         {
