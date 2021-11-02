@@ -11,9 +11,15 @@ namespace MeshProcess
             FBX
         }
 
+        public enum Mode
+        {
+            SingleMode,
+            BatchMode
+        }
+
         public FileExtension FileType { get; set; } = FileExtension.Prefab;
+        public Mode GenerationMode { get; set; } = Mode.SingleMode;
         public string AssetPath { get; set; } = string.Empty;
-        public bool FromObjectField { get; set; } = false;
         public bool OverwriteMeshComponents { get; set; } = true;
         public bool OverwriteAssets { get; set; } = true;
         public string AssetSavePath { get; set; } = "Assets/Prefabs";
@@ -23,6 +29,27 @@ namespace MeshProcess
         public string CurrentFile { get; set; } = string.Empty;
         public int MeshCountChild { get; set; }
         public int MeshCountTotal { get; set; }
+
+        public static VHACD.Parameters DefaultParameters()
+        {
+            return new VHACD.Parameters
+            {
+                m_resolution = 10000,
+                m_concavity = 0.001,
+                m_planeDownsampling = 4,
+                m_convexhullDownsampling = 4,
+                m_alpha = 0.05,
+                m_beta = 0.05,
+                m_pca = 0,
+                m_mode = 0,
+                m_maxNumVerticesPerCH = 64,
+                m_minVolumePerCH = 0.0001,
+                m_convexhullApproximation = 1,
+                m_oclAcceleration = 0,
+                m_maxConvexHulls = 1024,
+                m_projectHullVertices = true
+            };
+        }
 
         public static string GetFileExtensionString(FileExtension ext)
         {

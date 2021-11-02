@@ -11,7 +11,7 @@ namespace MeshProcess
         {
             // Get existing open window or if none, make a new one:
             var window = (MeshDecomposerWindow)EditorWindow.GetWindow(typeof(MeshDecomposerWindow));
-            window.minSize = new Vector2(500, 500);
+            window.minSize = new Vector2(400, 500);
             window.Show();
         }
     }
