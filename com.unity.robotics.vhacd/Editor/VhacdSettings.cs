@@ -42,8 +42,8 @@ namespace MeshProcess
         public int MeshCountChild { get; set; }
         public int MeshCountTotal { get; set; }
 
+        // Delegate and Event for GenerationMode change
         public delegate void OnModeChange();
-
         public event OnModeChange OnModeChangeEvent;
 
         public static VHACD.Parameters DefaultParameters()
@@ -67,6 +67,11 @@ namespace MeshProcess
             };
         }
 
+        /// <summary>
+        /// Convert FileExtension enum to lowercase string.
+        /// </summary>
+        /// <param name="ext">FileExtension enum to convert</param>
+        /// <returns>Extension without prefix, e.g. "fbx"</returns>
         public static string GetFileExtensionString(FileExtension ext)
         {
             return $"{ext.ToString().ToLower()}";
