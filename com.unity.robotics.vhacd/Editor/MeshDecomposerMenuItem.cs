@@ -14,5 +14,11 @@ namespace MeshProcess
             window.minSize = new Vector2(400, 525);
             window.Show();
         }
+
+        [MenuItem("VHACD/Generate Collider Meshes", true)]
+        static bool ValidateGenerateWindow()
+        {
+            return !Application.isPlaying;
+        }
     }
 }
