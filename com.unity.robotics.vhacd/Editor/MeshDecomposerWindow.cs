@@ -370,6 +370,10 @@ namespace MeshProcess
             else
             {
                 Debug.Log($"Generated {m_Settings.MeshCountTotal} meshes on {go.name}");
+                // TODO: refresh scene view without reactivating object
+                go.SetActive(false);
+                yield return new WaitForEndOfFrame();
+                go.SetActive(true);
             }
         }
 
