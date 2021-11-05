@@ -59,7 +59,7 @@ namespace MeshProcess
                         if (!string.IsNullOrEmpty(m_Settings.AssetPath) &&
                             string.IsNullOrEmpty(m_Settings.MeshSavePath))
                         {
-                            m_Settings.MeshSavePath = $"{Path.GetDirectoryName(m_Settings.AssetPath)}/Meshes";
+                            m_Settings.MeshSavePath = $"{Path.GetDirectoryName(m_Settings.AssetPath)}/VHACD/Meshes";
                         }
                     }
 
@@ -83,7 +83,7 @@ namespace MeshProcess
                         if (!string.IsNullOrEmpty(m_Settings.AssetPath))
                         {
                             m_Settings.MeshSavePath =
-                                $"{m_Settings.AssetPath.Substring(Application.dataPath.Length - "Assets".Length)}";
+                                $"{m_Settings.AssetPath.Substring(Application.dataPath.Length - "Assets".Length)}/VHACD/Meshes";
                         }
                     }
 
@@ -103,7 +103,7 @@ namespace MeshProcess
             {
                 var tmpMeshSavePath = EditorUtility.OpenFolderPanel("Select Mesh Save Directory", "Assets", "");
                 if (!string.IsNullOrEmpty(tmpMeshSavePath))
-                    m_Settings.MeshSavePath = tmpMeshSavePath.Substring(Application.dataPath.Length - "Assets".Length);
+                    m_Settings.MeshSavePath = $"{tmpMeshSavePath.Substring(Application.dataPath.Length - "Assets".Length)}/VHACD/Meshes";
             }
 
             EditorGUILayout.EndHorizontal();
@@ -160,8 +160,10 @@ namespace MeshProcess
 
                         if (GUILayout.Button("Save"))
                         {
-                            SavePrefab();
-                            Debug.Log($"Saved {m_MeshObject.name} with the following parameters:\n{m_Parameters}");
+                            if (SavePrefab())
+                            {
+                                Debug.Log($"Saved {m_MeshObject.name} with the following parameters:\n{m_Parameters}");
+                            }
                         }
                     }
                 }
@@ -287,6 +289,7 @@ namespace MeshProcess
         /// <param name="prefabPath">In Batch Mode; path of file to overwrite</param>
         IEnumerator GenerateConvexMeshes(GameObject go, string prefabPath = "")
         {
+            m_Settings.MeshCountChild = 0;
             // Instantiate and focus on object in Batch Mode
             if (m_Settings.GenerationMode == VhacdSettings.Mode.BatchMode)
             {
@@ -322,9 +325,9 @@ namespace MeshProcess
                 {
                     // Assign and save generated mesh
                     meshIndex++;
-                    var path = $"{m_Settings.MeshSavePath}/{m_MeshObject.name}/{meshIndex}.asset";
+                    var path = $"{m_Settings.MeshSavePath}/{meshIndex}.asset";
                     if (m_Settings.GenerationMode == VhacdSettings.Mode.SingleMode)
-                        path = $"{m_Settings.MeshSavePath}/TEMP/{m_MeshObject.name}/{meshIndex}.asset";
+                        path = $"{m_Settings.MeshSavePath}/TEMP/{meshIndex}.asset";
                     Directory.CreateDirectory(Path.GetDirectoryName(path) ?? throw new InvalidOperationException());
 
                     // Only create new asset if one doesn't exist or should overwrite
@@ -339,8 +342,9 @@ namespace MeshProcess
                 }
 
                 DestroyImmediate(child.GetComponent<VHACD>());
-                m_Settings.MeshCountTotal += m_Settings.MeshCountChild;
             }
+
+            m_Settings.MeshCountTotal += m_Settings.MeshCountChild;
 
             // In Batch Mode; save prefab
             if (m_Settings.GenerationMode == VhacdSettings.Mode.BatchMode)
@@ -393,7 +397,7 @@ namespace MeshProcess
         /// <summary>
         /// For Single Mode; Saves the prefab to the chosen location. Also changes the TEMP files to a non-temp location.
         /// </summary>
-        void SavePrefab()
+        bool SavePrefab()
         {
             var localPath = EditorUtility.SaveFilePanel(
                 "Save prefab",
@@ -406,12 +410,31 @@ namespace MeshProcess
                 Debug.Log($"Saving prefab at: {localPath.Substring(Application.dataPath.Length - "Assets".Length)}");
 
                 // Move TEMP files to save location
-                Directory.Move($"{m_Settings.MeshSavePath}/TEMP", $"{m_Settings.MeshSavePath}/Meshes");
+                if (Directory.Exists(m_Settings.MeshSavePath))
+                {
+                    var files = Directory.EnumerateFiles($"{m_Settings.MeshSavePath}/TEMP",
+                        "*", SearchOption.AllDirectories);
+
+                    foreach (var s in files)
+                    {
+                        var fileName = Path.GetFileName(s);
+                        var destFile = Path.Combine(m_Settings.MeshSavePath, fileName);
+                        File.Move(s, destFile);
+                    }
+                }
+                else
+                {
+                    Directory.Move($"{m_Settings.MeshSavePath}/TEMP", $"{m_Settings.MeshSavePath}");
+                }
                 File.Delete($"{m_Settings.MeshSavePath}/TEMP.meta");
 
                 // Save the Prefab.
                 PrefabUtility.SaveAsPrefabAssetAndConnect(m_MeshObject, localPath, InteractionMode.AutomatedAction);
+                AssetDatabase.Refresh();
+                return true;
             }
+
+            return false;
         }
 
         /// <summary>
@@ -488,6 +511,8 @@ namespace MeshProcess
             }
             Directory.Delete(path);
             File.Delete($"{path}.meta");
+
+            AssetDatabase.Refresh();
         }
 
         /// <summary>
@@ -543,7 +568,7 @@ namespace MeshProcess
             m_Parameters.m_oclAcceleration = (uint)EditorGUILayout.IntSlider(new GUIContent("OclAcceleration", ""),
                 (int)m_Parameters.m_oclAcceleration, 0, 1);
             m_Parameters.m_maxConvexHulls =
-                (uint)EditorGUILayout.IntField("Max Convex Hulls", (int)m_Parameters.m_maxConvexHulls);
+                (uint)EditorGUILayout.IntField("Max Convex Hulls per MeshRenderer", (int)m_Parameters.m_maxConvexHulls);
             m_Parameters.m_projectHullVertices = EditorGUILayout.Toggle(
                 new GUIContent("ProjectHullVertices",
                     "This will project the output convex hull vertices onto the original source mesh to increase the floating point accuracy of the results"),

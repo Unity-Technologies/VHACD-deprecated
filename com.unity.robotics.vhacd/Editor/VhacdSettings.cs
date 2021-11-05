@@ -34,8 +34,8 @@ namespace MeshProcess
         public string AssetPath { get; set; } = string.Empty;
         public bool OverwriteMeshComponents { get; set; } = true;
         public bool OverwriteAssets { get; set; } = true;
-        public string AssetSavePath { get; set; } = "Assets/Prefabs";
-        public string MeshSavePath { get; set; } = "Assets/Meshes";
+        public string AssetSavePath { get; set; } = "Assets/VHACD/Prefabs";
+        public string MeshSavePath { get; set; } = "Assets/VHACD/Meshes";
         public int AssetsConverted { get; set; }
         public int TotalAssets { get; set; }
         public string CurrentFile { get; set; } = string.Empty;
