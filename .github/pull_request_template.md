@@ -16,7 +16,7 @@ Provide any relevant links here.
 
 ## Testing and Verification
 
-Please describe the tests that you ran to verify your changes. Please also provide instructions and Unity project files as appropriate so we can reproduce the test environment. 
+Please describe the tests that you ran to verify your changes. Please also provide instructions and Unity project files as appropriate so we can reproduce the test environment.
 
 ### Test Configuration:
 - Unity Version: [e.g. Unity 2020.2.0f1]
@@ -28,7 +28,7 @@ Please describe the tests that you ran to verify your changes. Please also provi
 <!-- - [ ] Followed the style guidelines as described in the [Contribution Guidelines](https://github.com/Unity-Technologies/VHACD/blob/main/CONTRIBUTING.md) -->
 <!-- - [ ] Added tests that prove my fix is effective or that my feature works -->
 <!-- - [ ] Increased the [test coverage criteria](https://github.com/Unity-Technologies/VHACD/blob/dev/.yamato/yamato-config.yml#L18) by 3% -->
-<!-- - [ ] Updated the [Changelog](https://github.com/Unity-Technologies/VHACD/blob/dev/com.unity.robotics.urdf-importer/CHANGELOG.md) and described changes in the [Unreleased section](https://github.com/Unity-Technologies/URDF-Importer/blob/dev/com.unity.robotics.urdf-importer/CHANGELOG.md#unreleased) -->
+- [ ] Updated the [Changelog](../CHANGELOG.md) and described changes in the [Unreleased section](../CHANGELOG.md#unreleased)
 - [ ] Updated the documentation as appropriate
 
 ## Other comments
