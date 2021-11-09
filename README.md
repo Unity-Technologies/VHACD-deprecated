@@ -24,7 +24,7 @@ A second approach consists in computing an exact convex decomposition of a surfa
 ![ACD vs. ECD](https://raw.githubusercontent.com/kmammou/v-hacd/master/doc/ecdvsacd.png)
 
 
-# Parameters 
+# Parameters
 | Parameter name | Description | Default value | Range |
 | ------------- | ------------- | ------------- | ---- |
 | resolution | maximum number of voxels generated during the voxelization stage	| 100,000 | 10,000-64,000,000 |

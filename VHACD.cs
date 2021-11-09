@@ -79,7 +79,7 @@ namespace MeshProcess
 
             [Range(0, 1)]
             public uint m_oclAcceleration;
-            
+
             public uint m_maxConvexHulls;
 
             [Tooltip("This will project the output convex hull vertices onto the original source mesh to increase the floating point accuracy of the results")]
@@ -133,7 +133,7 @@ namespace MeshProcess
         [ContextMenu("Generate Convex Meshes")]
         public unsafe List<Mesh> GenerateConvexMeshes(Mesh mesh = null)
         {
-            if(mesh == null)
+            if (mesh == null)
                 mesh = GetComponent<MeshFilter>().sharedMesh;
             var vhacd = CreateVHACD();
             var parameters = m_parameters;
@@ -181,7 +181,7 @@ namespace MeshProcess
                 Marshal.Copy((System.IntPtr)hull.m_triangles, indices, 0, indices.Length);
                 hullMesh.SetTriangles(indices, 0);
 
-                
+
                 convexMesh.Add(hullMesh);
             }
             return convexMesh;
