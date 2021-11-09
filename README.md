@@ -1,3 +1,14 @@
+# VHACD
+
+[![License](https://img.shields.io/badge/license-BSD--3-green.svg)](LICENSE.md)
+![Unity](https://img.shields.io/badge/unity-2020.2+-brightgreen)
+
+---
+
+We're currently working on lots of things! Please take a short moment fill out our [survey](https://unitysoftware.co1.qualtrics.com/jfe/form/SV_0ojVkDVW0nNrHkW) to help us identify what products and packages to build next.
+
+---
+
 # The V-HACD library decomposes a 3D surface into a set of "near" convex parts.
 
 ![Approximate convex decomposition of "Camel"](https://github.com/kmammou/v-hacd/raw/master/doc/acd.png)
