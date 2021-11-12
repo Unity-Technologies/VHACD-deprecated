@@ -40,17 +40,15 @@ namespace MeshProcess
             switch (m_Settings.GenerationMode)
             {
                 case VhacdSettings.Mode.SingleMode:
-                    if (m_MeshObject != null)
-                    {
-                        GUILayout.Label(m_MeshObject != null ? m_MeshObject.name : "No mesh imported");
-                    }
-
                     EditorGUILayout.BeginHorizontal();
                     GUILayout.Label("Selected file:");
-                    m_ObjectField = EditorGUILayout.ObjectField(m_ObjectField, typeof(Object), true);
-
-                    if (m_ObjectField != null)
+                    if (m_ObjectField == null)
                     {
+                        m_ObjectField = EditorGUILayout.ObjectField(m_ObjectField, typeof(Object), true);
+                    }
+                    else
+                    {
+                        GUILayout.Label(m_ObjectField.name);
                         m_Settings.AssetPath = AssetDatabase.GetAssetPath(m_ObjectField);
                         m_Settings.FileType = Path.GetExtension(m_Settings.AssetPath).Equals(".fbx")
                             ? VhacdSettings.FileExtension.FBX
@@ -59,7 +57,7 @@ namespace MeshProcess
                         if (!string.IsNullOrEmpty(m_Settings.AssetPath) &&
                             string.IsNullOrEmpty(m_Settings.MeshSavePath))
                         {
-                            m_Settings.MeshSavePath = $"{Path.GetDirectoryName(m_Settings.AssetPath)}/VHACD/Meshes";
+                            m_Settings.MeshSavePath = $"{Path.GetDirectoryName(m_Settings.AssetPath)}/VHACD/Collision Meshes";
                         }
                     }
 
@@ -83,7 +81,7 @@ namespace MeshProcess
                         if (!string.IsNullOrEmpty(m_Settings.AssetPath))
                         {
                             m_Settings.MeshSavePath =
-                                $"{m_Settings.AssetPath.Substring(Application.dataPath.Length - "Assets".Length)}/VHACD/Meshes";
+                                $"{m_Settings.AssetPath.Substring(Application.dataPath.Length - "Assets".Length)}/VHACD/Collision Meshes";
                         }
                     }
 
@@ -103,7 +101,7 @@ namespace MeshProcess
             {
                 var tmpMeshSavePath = EditorUtility.OpenFolderPanel("Select Mesh Save Directory", "Assets", "");
                 if (!string.IsNullOrEmpty(tmpMeshSavePath))
-                    m_Settings.MeshSavePath = $"{tmpMeshSavePath.Substring(Application.dataPath.Length - "Assets".Length)}/VHACD/Meshes";
+                    m_Settings.MeshSavePath = $"{tmpMeshSavePath.Substring(Application.dataPath.Length - "Assets".Length)}/VHACD/Collision Meshes";
             }
 
             EditorGUILayout.EndHorizontal();
@@ -167,15 +165,6 @@ namespace MeshProcess
                         }
                     }
                 }
-
-                // Clear out object button
-                if (m_MeshObject != null)
-                {
-                    if (GUILayout.Button("Reset Object"))
-                    {
-                        ClearWindow();
-                    }
-                }
             }
             else
             {
@@ -195,6 +184,12 @@ namespace MeshProcess
                     GUILayout.Label("Please select a directory!");
                     m_ShowBar = false;
                 }
+            }
+
+            // Clear out object button
+            if (GUILayout.Button("Clear Object"))
+            {
+                ClearWindow();
             }
 
             // Reset button
@@ -325,9 +320,9 @@ namespace MeshProcess
                 {
                     // Assign and save generated mesh
                     meshIndex++;
-                    var path = $"{m_Settings.MeshSavePath}/{meshIndex}.asset";
+                    var path = $"{m_Settings.MeshSavePath}/{m_MeshObject.name}_{meshIndex}.asset";
                     if (m_Settings.GenerationMode == VhacdSettings.Mode.SingleMode)
-                        path = $"{m_Settings.MeshSavePath}/TEMP/{meshIndex}.asset";
+                        path = $"{m_Settings.MeshSavePath}/TEMP/{m_MeshObject.name}_{meshIndex}.asset";
                     Directory.CreateDirectory(Path.GetDirectoryName(path) ?? throw new InvalidOperationException());
 
                     // Only create new asset if one doesn't exist or should overwrite

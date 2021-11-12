@@ -25,9 +25,6 @@ Please describe the tests that you ran to verify your changes. Please also provi
 ## Checklist
 - [ ] Ensured this PR is up-to-date with the `dev` branch
 - [ ] Created this PR to target the `dev` branch
-<!-- - [ ] Followed the style guidelines as described in the [Contribution Guidelines](https://github.com/Unity-Technologies/VHACD/blob/main/CONTRIBUTING.md) -->
-<!-- - [ ] Added tests that prove my fix is effective or that my feature works -->
-<!-- - [ ] Increased the [test coverage criteria](https://github.com/Unity-Technologies/VHACD/blob/dev/.yamato/yamato-config.yml#L18) by 3% -->
 - [ ] Updated the [Changelog](../CHANGELOG.md) and described changes in the [Unreleased section](../CHANGELOG.md#unreleased)
 - [ ] Updated the documentation as appropriate
 
