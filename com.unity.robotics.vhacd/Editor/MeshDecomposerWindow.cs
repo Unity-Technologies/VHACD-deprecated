@@ -57,7 +57,7 @@ namespace MeshProcess
                         if (!string.IsNullOrEmpty(m_Settings.AssetPath) &&
                             string.IsNullOrEmpty(m_Settings.MeshSavePath))
                         {
-                            m_Settings.MeshSavePath = $"{Path.GetDirectoryName(m_Settings.AssetPath)}/VHACD/Collision Meshes";
+                            m_Settings.MeshSavePath = $"{Path.GetDirectoryName(m_Settings.AssetPath)}/VHACD/Collision Meshes/{Path.GetFileNameWithoutExtension(m_Settings.AssetPath)}";
                         }
                     }
 
@@ -178,9 +178,12 @@ namespace MeshProcess
             }
 
             // Clear out object button
-            if (GUILayout.Button("Clear Object"))
+            if (m_ObjectField != null || m_MeshObject != null)
             {
-                ClearWindow();
+                if (GUILayout.Button("Clear Object"))
+                {
+                    ClearWindow();
+                }
             }
 
             // Reset button
@@ -406,7 +409,15 @@ namespace MeshProcess
                     {
                         var fileName = Path.GetFileName(s);
                         var destFile = Path.Combine(m_Settings.MeshSavePath, fileName);
-                        File.Move(s, destFile);
+                        if (!File.Exists(destFile))
+                        {
+                            File.Move(s, destFile);
+                        }
+                        else
+                        {
+                            File.Delete(destFile);
+                            File.Move(s, destFile);
+                        }
                     }
                 }
                 else
