@@ -63,6 +63,21 @@ namespace MeshProcess
 
                     EditorGUILayout.EndHorizontal();
 
+                    // Mesh save directory
+                    EditorGUILayout.BeginHorizontal();
+                    GUILayout.Label("Mesh save path:");
+                    GUILayout.Label(!string.IsNullOrEmpty(m_Settings.MeshSavePath)
+                        ? m_Settings.MeshSavePath
+                        : "Select a directory");
+                    if (GUILayout.Button("Select Directory"))
+                    {
+                        var tmpMeshSavePath = EditorUtility.OpenFolderPanel("Select Mesh Save Directory", "Assets", "");
+                        if (!string.IsNullOrEmpty(tmpMeshSavePath))
+                            m_Settings.MeshSavePath = $"{tmpMeshSavePath.Substring(Application.dataPath.Length - "Assets".Length)}/VHACD/Collision Meshes";
+                    }
+
+                    EditorGUILayout.EndHorizontal();
+
                     break;
                 case VhacdSettings.Mode.BatchMode:
                     // File extension selection
@@ -77,65 +92,41 @@ namespace MeshProcess
                     if (GUILayout.Button("Select Directory"))
                     {
                         m_Settings.AssetPath = EditorUtility.OpenFolderPanel("Select Asset Directory", "Assets", "");
-
-                        if (!string.IsNullOrEmpty(m_Settings.AssetPath))
-                        {
-                            m_Settings.MeshSavePath =
-                                $"{m_Settings.AssetPath.Substring(Application.dataPath.Length - "Assets".Length)}/VHACD/Collision Meshes";
-                        }
                     }
 
                     EditorGUILayout.EndHorizontal();
+
+                    // Bool settings
+                    m_Settings.OverwriteMeshComponents = GUILayout.Toggle(m_Settings.OverwriteMeshComponents,
+                        "Overwrite any existing collider components?");
+                    if (m_Settings.FileType == VhacdSettings.FileExtension.Prefab)
+                    {
+                        m_Settings.OverwriteAssets =
+                            GUILayout.Toggle(m_Settings.OverwriteAssets, "Overwrite existing assets?");
+                    }
+
+                    if (m_Settings.FileType == VhacdSettings.FileExtension.Prefab && !m_Settings.OverwriteAssets ||
+                        m_Settings.FileType != VhacdSettings.FileExtension.Prefab)
+                    {
+                        EditorGUILayout.BeginHorizontal();
+                        GUILayout.Label(!string.IsNullOrEmpty(m_Settings.AssetSavePath)
+                            ? m_Settings.AssetSavePath
+                            : "Select a directory");
+                        if (GUILayout.Button("Select Directory"))
+                        {
+                            var tmpAssetSavePath = EditorUtility.OpenFolderPanel("Select Save Directory", "Assets", "");
+                            if (!string.IsNullOrEmpty(tmpAssetSavePath))
+                            {
+                                m_Settings.AssetSavePath =
+                                    tmpAssetSavePath.Substring(Application.dataPath.Length - "Assets".Length);
+                            }
+                        }
+
+                        EditorGUILayout.EndHorizontal();
+                    }
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
-            }
-
-            // Mesh save directory
-            EditorGUILayout.BeginHorizontal();
-            GUILayout.Label("Mesh save path:");
-            GUILayout.Label(!string.IsNullOrEmpty(m_Settings.MeshSavePath)
-                ? m_Settings.MeshSavePath
-                : "Select a directory");
-            if (GUILayout.Button("Select Directory"))
-            {
-                var tmpMeshSavePath = EditorUtility.OpenFolderPanel("Select Mesh Save Directory", "Assets", "");
-                if (!string.IsNullOrEmpty(tmpMeshSavePath))
-                    m_Settings.MeshSavePath = $"{tmpMeshSavePath.Substring(Application.dataPath.Length - "Assets".Length)}/VHACD/Collision Meshes";
-            }
-
-            EditorGUILayout.EndHorizontal();
-
-            if (m_Settings.GenerationMode == VhacdSettings.Mode.BatchMode)
-            {
-                // Bool settings
-                m_Settings.OverwriteMeshComponents = GUILayout.Toggle(m_Settings.OverwriteMeshComponents,
-                    "Overwrite any existing collider components?");
-                if (m_Settings.FileType == VhacdSettings.FileExtension.Prefab)
-                {
-                    m_Settings.OverwriteAssets =
-                        GUILayout.Toggle(m_Settings.OverwriteAssets, "Overwrite existing assets?");
-                }
-
-                if (m_Settings.FileType == VhacdSettings.FileExtension.Prefab && !m_Settings.OverwriteAssets ||
-                    m_Settings.FileType != VhacdSettings.FileExtension.Prefab)
-                {
-                    EditorGUILayout.BeginHorizontal();
-                    GUILayout.Label(!string.IsNullOrEmpty(m_Settings.AssetSavePath)
-                        ? m_Settings.AssetSavePath
-                        : "Select a directory");
-                    if (GUILayout.Button("Select Directory"))
-                    {
-                        var tmpAssetSavePath = EditorUtility.OpenFolderPanel("Select Save Directory", "Assets", "");
-                        if (!string.IsNullOrEmpty(tmpAssetSavePath))
-                        {
-                            m_Settings.AssetSavePath =
-                                tmpAssetSavePath.Substring(Application.dataPath.Length - "Assets".Length);
-                        }
-                    }
-
-                    EditorGUILayout.EndHorizontal();
-                }
             }
 
             // VHACD decomposition parameters
@@ -223,11 +214,11 @@ namespace MeshProcess
         {
             if (m_MeshObject == null)
             {
+                DeleteDirectoryAndContents($"{m_Settings.MeshSavePath}/TEMP");
                 m_ObjectField = null;
                 m_Settings.AssetPath = string.Empty;
                 m_Settings.MeshSavePath = string.Empty;
                 Selection.activeObject = null;
-                DeleteDirectoryAndContents($"{m_Settings.MeshSavePath}/TEMP");
             }
         }
 
@@ -263,6 +254,7 @@ namespace MeshProcess
                 foreach (var filePath in fileEnumerable)
                 {
                     var f = filePath.Substring(Application.dataPath.Length - "Assets".Length);
+                    m_Settings.MeshSavePath = $"{Path.GetDirectoryName(f)}/VHACD/Collision Meshes/{Path.GetFileNameWithoutExtension(f)}";
                     var obj = AssetDatabase.LoadAssetAtPath<GameObject>(f);
 
                     m_Settings.MeshCountChild = 0;
@@ -358,7 +350,7 @@ namespace MeshProcess
                 }
                 else
                 {
-                    Debug.Log($"Updating prefab {localPath.Substring(Application.dataPath.Length)}");
+                    Debug.Log($"Updating prefab {localPath.Substring(Application.dataPath.Length + 1)}");
                 }
 
                 // Save the Prefab.

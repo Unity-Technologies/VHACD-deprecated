@@ -27,7 +27,10 @@ namespace MeshProcess
                 if (m_GenerationMode != value)
                 {
                     m_GenerationMode = value;
-                    OnModeChangeEvent?.Invoke();
+                    if (OnModeChangeEvent != null)
+                    {
+                        OnModeChangeEvent();
+                    }
                 }
             }
         }
