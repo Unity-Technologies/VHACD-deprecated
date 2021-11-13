@@ -57,7 +57,8 @@ namespace MeshProcess
                         if (!string.IsNullOrEmpty(m_Settings.AssetPath) &&
                             string.IsNullOrEmpty(m_Settings.MeshSavePath))
                         {
-                            m_Settings.MeshSavePath = $"{Path.GetDirectoryName(m_Settings.AssetPath)}/VHACD/Collision Meshes/{Path.GetFileNameWithoutExtension(m_Settings.AssetPath)}";
+                            m_Settings.MeshSavePath =
+                                $"{Path.GetDirectoryName(m_Settings.AssetPath)}/VHACD/Collision Meshes/{Path.GetFileNameWithoutExtension(m_Settings.AssetPath)}";
                         }
                     }
 
@@ -73,7 +74,10 @@ namespace MeshProcess
                     {
                         var tmpMeshSavePath = EditorUtility.OpenFolderPanel("Select Mesh Save Directory", "Assets", "");
                         if (!string.IsNullOrEmpty(tmpMeshSavePath))
-                            m_Settings.MeshSavePath = $"{tmpMeshSavePath.Substring(Application.dataPath.Length - "Assets".Length)}/VHACD/Collision Meshes";
+                        {
+                            m_Settings.MeshSavePath =
+                                $"{tmpMeshSavePath.Substring(Application.dataPath.Length - "Assets".Length)}/VHACD/Collision Meshes";
+                        }
                     }
 
                     EditorGUILayout.EndHorizontal();
@@ -124,6 +128,7 @@ namespace MeshProcess
 
                         EditorGUILayout.EndHorizontal();
                     }
+
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -140,12 +145,19 @@ namespace MeshProcess
                 {
                     var f = m_Settings.AssetPath;
                     if (m_MeshObject == null)
+                    {
                         if (GUILayout.Button("Import Mesh"))
+                        {
                             ImportMesh(f);
+                        }
+                    }
 
                     if (m_MeshObject != null)
                     {
-                        if (GUILayout.Button("Generate!")) GenerateColliders();
+                        if (GUILayout.Button("Generate!"))
+                        {
+                            GenerateColliders();
+                        }
 
                         if (GUILayout.Button("Save"))
                         {
@@ -168,7 +180,9 @@ namespace MeshProcess
                     GUILayout.Label($"Assets found in directory: {m_Settings.TotalAssets}");
 
                     if (GUILayout.Button("Generate!"))
+                    {
                         EditorCoroutineUtility.StartCoroutine(OpenFiles(fileEnumerable), this);
+                    }
                 }
                 else
                 {
@@ -200,18 +214,15 @@ namespace MeshProcess
         }
 
         /// <summary>
-        /// Resets paths and fields for this window when the scene is modified manually.
+        ///     Resets paths and fields for this window when the scene is modified manually.
         /// </summary>
         void OnHierarchyChange()
         {
-            if (m_Settings.GenerationMode == VhacdSettings.Mode.SingleMode)
-            {
-                ResetGenerator();
-            }
+            if (m_Settings.GenerationMode == VhacdSettings.Mode.SingleMode) ResetGenerator();
         }
 
         /// <summary>
-        /// Resets paths and fields for this window. Also deletes and temp directories and contents.
+        ///     Resets paths and fields for this window. Also deletes and temp directories and contents.
         /// </summary>
         void ResetGenerator()
         {
@@ -226,7 +237,7 @@ namespace MeshProcess
         }
 
         /// <summary>
-        /// In Batch Mode; Helper function to update Progress bar in this window
+        ///     In Batch Mode; Helper function to update Progress bar in this window
         /// </summary>
         void UpdateProgressBar()
         {
@@ -243,7 +254,7 @@ namespace MeshProcess
         }
 
         /// <summary>
-        /// In Batch Mode; enumerate over files and generate mesh colliders.
+        ///     In Batch Mode; enumerate over files and generate mesh colliders.
         /// </summary>
         /// <param name="fileEnumerable">File enumerable to iterate through</param>
         IEnumerator OpenFiles(IEnumerable<string> fileEnumerable)
@@ -257,7 +268,8 @@ namespace MeshProcess
                 foreach (var filePath in fileEnumerable)
                 {
                     var f = filePath.Substring(Application.dataPath.Length - "Assets".Length);
-                    m_Settings.MeshSavePath = $"{Path.GetDirectoryName(f)}/VHACD/Collision Meshes/{Path.GetFileNameWithoutExtension(f)}";
+                    m_Settings.MeshSavePath =
+                        $"{Path.GetDirectoryName(f)}/VHACD/Collision Meshes/{Path.GetFileNameWithoutExtension(f)}";
                     var obj = AssetDatabase.LoadAssetAtPath<GameObject>(f);
 
                     m_Settings.MeshCountChild = 0;
@@ -273,13 +285,14 @@ namespace MeshProcess
         }
 
         /// <summary>
-        /// The core function to generate and assign mesh colliders.
+        ///     The core function to generate and assign mesh colliders.
         /// </summary>
         /// <param name="go">GameObject to convert meshes</param>
         /// <param name="prefabPath">In Batch Mode; path of file to overwrite</param>
         IEnumerator GenerateConvexMeshes(GameObject go, string prefabPath = "")
         {
             m_Settings.MeshCountChild = 0;
+
             // Instantiate and focus on object in Batch Mode
             if (m_Settings.GenerationMode == VhacdSettings.Mode.BatchMode)
             {
@@ -303,7 +316,10 @@ namespace MeshProcess
                     if (existingColliders.Length > 0)
                     {
                         Debug.Log($"{child.name} had existing colliders; overwriting!");
-                        foreach (var coll in existingColliders) DestroyImmediate(coll);
+                        foreach (var coll in existingColliders)
+                        {
+                            DestroyImmediate(coll);
+                        }
                     }
                 }
 
@@ -364,6 +380,7 @@ namespace MeshProcess
             else
             {
                 Debug.Log($"Generated {m_Settings.MeshCountTotal} meshes on {go.name}");
+
                 // TODO: refresh scene view without reactivating object
                 go.SetActive(false);
                 yield return new WaitForEndOfFrame();
@@ -372,7 +389,7 @@ namespace MeshProcess
         }
 
         /// <summary>
-        /// Removes instantiated mesh and resets values for this window.
+        ///     Removes instantiated mesh and resets values for this window.
         /// </summary>
         void ClearWindow()
         {
@@ -385,7 +402,7 @@ namespace MeshProcess
         }
 
         /// <summary>
-        /// For Single Mode; Saves the prefab to the chosen location. Also changes the TEMP files to a non-temp location.
+        ///     For Single Mode; Saves the prefab to the chosen location. Also changes the TEMP files to a non-temp location.
         /// </summary>
         bool SavePrefab()
         {
@@ -409,21 +426,19 @@ namespace MeshProcess
                     {
                         var fileName = Path.GetFileName(s);
                         var destFile = Path.Combine(m_Settings.MeshSavePath, fileName);
-                        if (!File.Exists(destFile))
-                        {
-                            File.Move(s, destFile);
-                        }
-                        else
+                        if (File.Exists(destFile))
                         {
                             File.Delete(destFile);
-                            File.Move(s, destFile);
                         }
+
+                        File.Move(s, destFile);
                     }
                 }
                 else
                 {
                     Directory.Move($"{m_Settings.MeshSavePath}/TEMP", $"{m_Settings.MeshSavePath}");
                 }
+
                 File.Delete($"{m_Settings.MeshSavePath}/TEMP.meta");
 
                 // Save the Prefab.
@@ -436,7 +451,7 @@ namespace MeshProcess
         }
 
         /// <summary>
-        /// For Single Mode; Loads GameObject from file and instantiates it into the scene
+        ///     For Single Mode; Loads GameObject from file and instantiates it into the scene
         /// </summary>
         /// <param name="file">Path of the file to load in project</param>
         void ImportMesh(string file)
@@ -450,7 +465,7 @@ namespace MeshProcess
         }
 
         /// <summary>
-        /// Clears any existing colliders and generated meshes and restarts the generation process
+        ///     Clears any existing colliders and generated meshes and restarts the generation process
         /// </summary>
         void GenerateColliders()
         {
@@ -462,7 +477,7 @@ namespace MeshProcess
         }
 
         /// <summary>
-        /// Recursively remove all existing Mesh Colliders on the transform
+        ///     Recursively remove all existing Mesh Colliders on the transform
         /// </summary>
         /// <param name="t">Transform to recurse on</param>
         static void ClearMeshColliders(Transform t)
@@ -486,7 +501,7 @@ namespace MeshProcess
         }
 
         /// <summary>
-        /// Deletes all the content inside and the folder at that path, including the metafile
+        ///     Deletes all the content inside and the folder at that path, including the metafile
         /// </summary>
         /// <param name="path">Path of directory to delete</param>
         static void DeleteDirectoryAndContents(string path)
@@ -507,6 +522,7 @@ namespace MeshProcess
             {
                 dir.Delete(true);
             }
+
             Directory.Delete(path);
             File.Delete($"{path}.meta");
 
@@ -514,7 +530,7 @@ namespace MeshProcess
         }
 
         /// <summary>
-        /// Creates and assigns the VHACD component to a GameObject
+        ///     Creates and assigns the VHACD component to a GameObject
         /// </summary>
         /// <param name="go">The GameObject to add the configured VHACD component</param>
         /// <returns>The added VHACD component</returns>
@@ -527,7 +543,7 @@ namespace MeshProcess
         }
 
         /// <summary>
-        /// Create editor sliders for VHACD parameters with appropriate tooltips
+        ///     Create editor sliders for VHACD parameters with appropriate tooltips
         /// </summary>
         void VhacdGuiLayout()
         {
