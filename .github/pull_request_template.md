@@ -1,35 +1,31 @@
-<!--- Provide a general summary of your changes in the Title above -->
+## Proposed change(s)
 
-## Description
-<!--- Describe your changes in detail -->
-<!--- What was the behavior before and what it is now? -->
+Describe the changes made in this PR.
 
-## Motivation and context
+### Useful links (GitHub issues, JIRA tickets, forum threads, etc.)
 
-Link to Jira ticket: 
+Provide any relevant links here.
 
-<!--- Why is this change required? What problem does it solve? -->
-<!--- If it fixes an open issue, please link to the issue here. -->
+### Types of change(s)
 
-## How has this been tested?
-<!--- Please describe in detail how you tested your changes. -->
-<!--- Include details of your testing environment, and the tests you ran to -->
-<!--- see how your change affects other areas of the code, etc. -->
+- [ ] Bug fix
+- [ ] New feature
+- [ ] Code refactor
+- [ ] Documentation update
+- [ ] Other (please describe)
 
-## External documentation and screenshots (if appropriate):
+## Testing and Verification
 
-## Types of changes
-<!--- What types of changes does your code introduce? Put an `x` in all the boxes that apply: -->
-- [ ] Bug fix (non-breaking change which fixes an issue)
-- [ ] New feature (non-breaking change which adds functionality)
-- [ ] Breaking change in service (fix or feature that would cause existing functionality to change)
-- [ ] Breaking change in local development environment (fix or feature that would cause local setup changes, update also readme.md)
+Please describe the tests that you ran to verify your changes. Please also provide instructions and Unity project files as appropriate so we can reproduce the test environment.
 
-## Checklist:
-<!--- Go over all the following points, and put an `x` in all the boxes that apply. -->
-- [ ] My code follows the code style of this project.
-- [ ] My change requires a change to the documentation.
-- [ ] I have updated the documentation accordingly.
-- [ ] I have added tests to cover my changes.
-- [ ] My change requires change in the monitoring.
-- [ ] I have updated the monitoring accordingly.
+### Test Configuration:
+- Unity Version: [e.g. Unity 2020.2.0f1]
+- Unity machine OS + version: [e.g. Windows 10]
+
+## Checklist
+- [ ] Ensured this PR is up-to-date with the `dev` branch
+- [ ] Created this PR to target the `dev` branch
+- [ ] Updated the [Changelog](../CHANGELOG.md) and described changes in the [Unreleased section](../CHANGELOG.md#unreleased)
+- [ ] Updated the documentation as appropriate
+
+## Other comments
