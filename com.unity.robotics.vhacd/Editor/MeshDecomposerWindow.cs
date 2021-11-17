@@ -16,7 +16,9 @@ namespace MeshProcess
         Object m_ObjectField;
         VHACD.Parameters m_Parameters;
         VhacdSettings m_Settings = new VhacdSettings();
+        EditorCoroutine m_ColliderCoroutine;
         bool m_ShowBar;
+        bool m_RunningGenerator;
 
         void Awake()
         {
@@ -146,27 +148,24 @@ namespace MeshProcess
                 if (!string.IsNullOrEmpty(m_Settings.AssetPath))
                 {
                     var f = m_Settings.AssetPath;
-                    if (m_MeshObject == null)
+                    GUI.enabled = m_MeshObject == null && !m_RunningGenerator;
+                    if (GUILayout.Button("Import Mesh"))
                     {
-                        if (GUILayout.Button("Import Mesh"))
-                        {
-                            ImportMesh(f);
-                        }
+                        ImportMesh(f);
                     }
 
-                    if (m_MeshObject != null)
+                    GUI.enabled = m_MeshObject != null && !m_RunningGenerator;
+                    if (GUILayout.Button("Generate!"))
                     {
-                        if (GUILayout.Button("Generate!"))
-                        {
-                            GenerateColliders();
-                        }
+                        GenerateColliders();
+                    }
 
-                        if (GUILayout.Button("Save"))
+                    GUI.enabled = m_MeshObject != null && !m_RunningGenerator;
+                    if (GUILayout.Button("Save"))
+                    {
+                        if (SavePrefab())
                         {
-                            if (SavePrefab())
-                            {
-                                Debug.Log($"Saved {m_MeshObject.name} with the following parameters:\n{m_Parameters}");
-                            }
+                            Debug.Log($"Saved {m_MeshObject.name} with the following parameters:\n{m_Parameters}");
                         }
                     }
                 }
@@ -181,9 +180,11 @@ namespace MeshProcess
                     m_Settings.TotalAssets = fileEnumerable.Count();
                     GUILayout.Label($"Assets found in directory: {m_Settings.TotalAssets}");
 
+                    GUI.enabled = true;
                     if (GUILayout.Button("Generate!"))
                     {
-                        EditorCoroutineUtility.StartCoroutine(OpenFiles(fileEnumerable), this);
+                        m_ColliderCoroutine = EditorCoroutineUtility.StartCoroutine(OpenFiles(fileEnumerable), this);
+                        m_RunningGenerator = true;
                     }
                 }
                 else
@@ -194,21 +195,30 @@ namespace MeshProcess
             }
 
             // Clear out object button
-            if (m_ObjectField != null || m_MeshObject != null)
+            GUI.enabled = (m_ObjectField != null || m_MeshObject != null) && !m_RunningGenerator;
+            if (GUILayout.Button("Clear Object"))
             {
-                if (GUILayout.Button("Clear Object"))
-                {
-                    ClearWindow();
-                }
+                ClearWindow();
             }
 
             // Reset button
+            GUI.enabled = !m_RunningGenerator;
             if (GUILayout.Button("Reset VHACD Parameters"))
             {
                 m_Parameters = VhacdSettings.DefaultParameters();
             }
 
+            // Cancel button
+            GUI.enabled = m_RunningGenerator;
+            if (GUILayout.Button("Cancel Generation"))
+            {
+                m_RunningGenerator = false;
+                EditorCoroutineUtility.StopCoroutine(m_ColliderCoroutine);
+                ClearWindow();
+            }
+
             // Progress bar
+            GUI.enabled = true;
             if (m_ShowBar && m_Settings.TotalAssets > 0 && m_Settings.GenerationMode == VhacdSettings.Mode.BatchMode)
             {
                 UpdateProgressBar();
@@ -277,9 +287,14 @@ namespace MeshProcess
 
                     m_Settings.MeshCountChild = 0;
                     m_Settings.MeshCountTotal = 0;
-                    yield return EditorCoroutineUtility.StartCoroutine(GenerateConvexMeshes(obj, filePath), this);
+                    m_RunningGenerator = true;
+                    m_ColliderCoroutine =
+                        EditorCoroutineUtility.StartCoroutine(GenerateConvexMeshes(obj, filePath), this);
+                    yield return m_ColliderCoroutine;
                     Debug.Log($"Generated {m_Settings.MeshCountTotal} meshes on {Path.GetFileName(f)}");
                 }
+
+                m_RunningGenerator = false;
             }
             else
             {
@@ -383,6 +398,7 @@ namespace MeshProcess
             else
             {
                 Debug.Log($"Generated {m_Settings.MeshCountTotal} meshes on {go.name}");
+                m_RunningGenerator = false;
 
                 // TODO: refresh scene view without reactivating object
                 go.SetActive(false);
@@ -476,7 +492,8 @@ namespace MeshProcess
             ClearMeshColliders(m_MeshObject.transform);
             m_Settings.MeshCountChild = 0;
             m_Settings.MeshCountTotal = 0;
-            EditorCoroutineUtility.StartCoroutine(GenerateConvexMeshes(m_MeshObject), this);
+            m_ColliderCoroutine = EditorCoroutineUtility.StartCoroutine(GenerateConvexMeshes(m_MeshObject), this);
+            m_RunningGenerator = true;
         }
 
         /// <summary>
