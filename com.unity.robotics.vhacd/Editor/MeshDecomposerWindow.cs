@@ -59,6 +59,7 @@ namespace MeshProcess
                         {
                             m_Settings.MeshSavePath =
                                 $"{Path.GetDirectoryName(m_Settings.AssetPath)}/VHACD/Collision Meshes/{Path.GetFileNameWithoutExtension(m_Settings.AssetPath)}";
+                            m_Settings.AssetSavePath = $"{Application.dataPath.Substring(0, Application.dataPath.Length - "Assets".Length - 1)}/{Path.GetDirectoryName(m_Settings.AssetPath)}";
                         }
                     }
 
@@ -96,6 +97,7 @@ namespace MeshProcess
                     if (GUILayout.Button("Select Directory"))
                     {
                         m_Settings.AssetPath = EditorUtility.OpenFolderPanel("Select Asset Directory", "Assets", "");
+                        m_Settings.AssetSavePath = m_Settings.AssetPath.Substring(Application.dataPath.Length - "Assets".Length);
                     }
 
                     EditorGUILayout.EndHorizontal();
@@ -270,6 +272,7 @@ namespace MeshProcess
                     var f = filePath.Substring(Application.dataPath.Length - "Assets".Length);
                     m_Settings.MeshSavePath =
                         $"{Path.GetDirectoryName(f)}/VHACD/Collision Meshes/{Path.GetFileNameWithoutExtension(f)}";
+                    m_Settings.AssetSavePath = Path.GetDirectoryName(f);
                     var obj = AssetDatabase.LoadAssetAtPath<GameObject>(f);
 
                     m_Settings.MeshCountChild = 0;
@@ -579,8 +582,9 @@ namespace MeshProcess
                 0, 1);
             m_Parameters.m_convexhullApproximation = (uint)EditorGUILayout.IntSlider(
                 new GUIContent("ConvexhullApproximation", ""), (int)m_Parameters.m_convexhullApproximation, 0, 1);
-            m_Parameters.m_oclAcceleration = (uint)EditorGUILayout.IntSlider(new GUIContent("OclAcceleration", ""),
-                (int)m_Parameters.m_oclAcceleration, 0, 1);
+            // TODO: Investigate this parameter
+            // m_Parameters.m_oclAcceleration = (uint)EditorGUILayout.IntSlider(new GUIContent("OclAcceleration", ""),
+            //     (int)m_Parameters.m_oclAcceleration, 0, 1);
             m_Parameters.m_maxConvexHulls =
                 (uint)EditorGUILayout.IntField("Max Convex Hulls per MeshRenderer", (int)m_Parameters.m_maxConvexHulls);
             m_Parameters.m_projectHullVertices = EditorGUILayout.Toggle(
