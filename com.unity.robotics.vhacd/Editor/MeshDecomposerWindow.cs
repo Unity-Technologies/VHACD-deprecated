@@ -138,6 +138,9 @@ namespace MeshProcess
                     throw new ArgumentOutOfRangeException();
             }
 
+            // Convex toggle
+            m_Settings.Convex = GUILayout.Toggle(m_Settings.Convex, "Convex Colliders");
+
             // VHACD decomposition parameters
             GUILayout.Label("VHACD Parameters");
             VhacdGuiLayout();
@@ -360,7 +363,7 @@ namespace MeshProcess
 
                     var current = child.AddComponent<MeshCollider>();
                     current.sharedMesh = collider;
-                    current.convex = true;
+                    current.convex = m_Settings.Convex;
                     m_Settings.MeshCountChild++;
                     yield return new WaitForEndOfFrame();
                 }

@@ -39,6 +39,7 @@ namespace MeshProcess
         public bool OverwriteAssets { get; set; } = true;
         public string AssetSavePath { get; set; } = String.Empty;
         public string MeshSavePath { get; set; } = String.Empty;
+        public bool Convex { get; set; } = true;
         public int AssetsConverted { get; set; }
         public int TotalAssets { get; set; }
         public string CurrentFile { get; set; } = string.Empty;
