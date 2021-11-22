@@ -442,7 +442,7 @@ namespace MeshProcess
 
                     foreach (var s in files)
                     {
-                        var fileName = Path.GetFileNameWithoutExtension(s);
+                        var fileName = Path.GetFileName(s);
                         var destFile = Path.Combine(m_Settings.MeshSavePath, fileName);
                         if (File.Exists(destFile))
                         {
