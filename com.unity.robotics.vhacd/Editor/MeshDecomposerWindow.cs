@@ -244,7 +244,6 @@ namespace MeshProcess
                 m_ObjectField = null;
                 m_Settings.AssetPath = string.Empty;
                 m_Settings.MeshSavePath = string.Empty;
-                Selection.activeObject = null;
             }
         }
 
@@ -427,7 +426,7 @@ namespace MeshProcess
         {
             var localPath = EditorUtility.SaveFilePanel(
                 "Save prefab",
-                m_Settings.AssetPath,
+                m_Settings.FileType == VhacdSettings.FileExtension.Prefab ? m_Settings.AssetPath : Path.GetDirectoryName(m_Settings.AssetPath),
                 m_MeshObject.name,
                 "prefab");
 
