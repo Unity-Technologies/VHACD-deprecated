@@ -25,12 +25,14 @@ namespace MeshProcess
             titleContent = new GUIContent("VHACD Generation Settings");
             m_Parameters = VhacdSettings.DefaultParameters();
             m_Settings.OnModeChangeEvent += ClearWindow;
+            m_Settings.OnHierarchyModeChangeEvent += RevertPrefab;
         }
 
         void OnDestroy()
         {
             ClearWindow();
             m_Settings.OnModeChangeEvent -= ClearWindow;
+            m_Settings.OnHierarchyModeChangeEvent -= RevertPrefab;
         }
 
         void OnGUI()
@@ -138,9 +140,28 @@ namespace MeshProcess
                     throw new ArgumentOutOfRangeException();
             }
 
+            // Convex toggle
+            m_Settings.Convex = GUILayout.Toggle(m_Settings.Convex, "Convex Colliders");
+
             // VHACD decomposition parameters
             GUILayout.Label("VHACD Parameters");
             VhacdGuiLayout();
+
+            GUILayout.BeginHorizontal();
+            m_Settings.NewCollidersChild = EditorGUILayout.Toggle(
+                new GUIContent("Add to new child object",
+                    "If disabled, colliders will add to the child object with the matching renderer"),
+                m_Settings.NewCollidersChild);
+
+            if (m_Settings.NewCollidersChild)
+            {
+                m_Settings.ChildDefaultOff = EditorGUILayout.Toggle(
+                    new GUIContent("Child defaults to off",
+                        "If disabled, child colliders object will stay active in hierarchy"),
+                    m_Settings.ChildDefaultOff);
+            }
+
+            GUILayout.EndHorizontal();
 
             if (m_Settings.GenerationMode == VhacdSettings.Mode.SingleMode)
             {
@@ -240,7 +261,7 @@ namespace MeshProcess
         {
             if (m_MeshObject == null)
             {
-                DeleteDirectoryAndContents($"{m_Settings.MeshSavePath}/TEMP");
+                MeshDecomposerExtensions.DeleteDirectoryAndContents($"{m_Settings.MeshSavePath}/TEMP");
                 m_ObjectField = null;
                 m_Settings.AssetPath = string.Empty;
                 m_Settings.MeshSavePath = string.Empty;
@@ -309,6 +330,7 @@ namespace MeshProcess
         IEnumerator GenerateConvexMeshes(GameObject go, string prefabPath = "")
         {
             m_Settings.MeshCountChild = 0;
+            GameObject vhacdChild = null;
 
             // Instantiate and focus on object in Batch Mode
             if (m_Settings.GenerationMode == VhacdSettings.Mode.BatchMode)
@@ -322,12 +344,21 @@ namespace MeshProcess
             m_Settings.CurrentFile = m_MeshObject.name;
             var meshFilters = m_MeshObject.GetComponentsInChildren<MeshFilter>();
 
+            if (m_Settings.NewCollidersChild)
+            {
+                vhacdChild = Instantiate(go, m_MeshObject.transform, true);
+                vhacdChild.name = "VHACD_Colliders";
+                ClearComponents(vhacdChild);
+
+                Selection.activeObject = vhacdChild;
+            }
+
             // Generate and assign colliders
             var meshIndex = 0;
             foreach (var meshFilter in meshFilters)
             {
                 var child = meshFilter.gameObject;
-                if (m_Settings.OverwriteMeshComponents)
+                if (m_Settings.OverwriteMeshComponents && !m_Settings.NewCollidersChild)
                 {
                     var existingColliders = child.GetComponents<MeshCollider>();
                     if (existingColliders.Length > 0)
@@ -357,9 +388,18 @@ namespace MeshProcess
                     AssetDatabase.CreateAsset(collider, path);
                     AssetDatabase.SaveAssets();
 
-                    var current = child.AddComponent<MeshCollider>();
+                    MeshCollider current;
+                    if (m_Settings.NewCollidersChild && vhacdChild != null)
+                    {
+                        var c = vhacdChild.transform.RecursiveFind(child.name);
+                        current = c.gameObject.AddComponent<MeshCollider>();
+                    }
+                    else
+                    {
+                        current = child.AddComponent<MeshCollider>();
+                    }
                     current.sharedMesh = collider;
-                    current.convex = true;
+                    current.convex = m_Settings.Convex;
                     m_Settings.MeshCountChild++;
                     yield return new WaitForEndOfFrame();
                 }
@@ -390,6 +430,14 @@ namespace MeshProcess
                 }
 
                 // Save the Prefab.
+                if (m_Settings.NewCollidersChild && m_Settings.ChildDefaultOff)
+                {
+                    var child = m_MeshObject.transform.Find("VHACD_Colliders");
+                    if (child != null)
+                    {
+                        child.gameObject.SetActive(false);
+                    }
+                }
                 PrefabUtility.SaveAsPrefabAssetAndConnect(m_MeshObject, localPath, InteractionMode.AutomatedAction);
                 DestroyImmediate(m_MeshObject);
                 m_Settings.AssetsConverted++;
@@ -406,6 +454,34 @@ namespace MeshProcess
             }
         }
 
+        static void ClearComponents(GameObject go)
+        {
+            foreach (var comp in go.GetComponents<Component>())
+            {
+                if (!(comp is Transform) && !(comp is MeshFilter) && !(comp is Renderer))
+                {
+                    DestroyImmediate(comp);
+                }
+            }
+
+            var rend = go.GetComponent<Renderer>();
+            if (rend != null)
+            {
+                DestroyImmediate(rend);
+            }
+
+            var filter = go.GetComponent<MeshFilter>();
+            if (filter != null)
+            {
+                DestroyImmediate(filter);
+            }
+
+            foreach (Transform child in go.transform)
+            {
+                ClearComponents(child.gameObject);
+            }
+        }
+
         /// <summary>
         ///     Removes instantiated mesh and resets values for this window.
         /// </summary>
@@ -419,11 +495,29 @@ namespace MeshProcess
             ResetGenerator();
         }
 
+        void RevertPrefab()
+        {
+            PrefabUtility.RevertPrefabInstance(m_ObjectField as GameObject);
+            DestroyImmediate(m_MeshObject);
+            var f = m_Settings.AssetPath;
+            ImportMesh(f);
+        }
+
         /// <summary>
         ///     For Single Mode; Saves the prefab to the chosen location. Also changes the TEMP files to a non-temp location.
         /// </summary>
         bool SavePrefab()
         {
+            // Turn OFF VHACD colliders by default
+            if (m_Settings.NewCollidersChild && m_Settings.ChildDefaultOff)
+            {
+                var child = m_MeshObject.transform.Find("VHACD_Colliders");
+                if (child != null)
+                {
+                    child.gameObject.SetActive(false);
+                }
+            }
+
             var localPath = EditorUtility.SaveFilePanel(
                 "Save prefab",
                 m_Settings.FileType == VhacdSettings.FileExtension.Prefab ? m_Settings.AssetPath : Path.GetDirectoryName(m_Settings.AssetPath),
@@ -472,7 +566,7 @@ namespace MeshProcess
         ///     For Single Mode; Loads GameObject from file and instantiates it into the scene
         /// </summary>
         /// <param name="file">Path of the file to load in project</param>
-        void ImportMesh(string file)
+        GameObject ImportMesh(string file)
         {
             var go = AssetDatabase.LoadAssetAtPath<GameObject>(file);
             m_MeshObject = Instantiate(go);
@@ -480,6 +574,7 @@ namespace MeshProcess
             m_MeshObject.name = templateFileName;
             Selection.activeObject = m_MeshObject;
             EditorApplication.ExecuteMenuItem("Edit/Frame Selected");
+            return m_MeshObject;
         }
 
         /// <summary>
@@ -487,8 +582,15 @@ namespace MeshProcess
         /// </summary>
         void GenerateColliders()
         {
-            DeleteDirectoryAndContents($"{m_Settings.MeshSavePath}/TEMP");
-            ClearMeshColliders(m_MeshObject.transform);
+            MeshDecomposerExtensions.DeleteDirectoryAndContents($"{m_Settings.MeshSavePath}/TEMP");
+            if (!m_Settings.NewCollidersChild)
+            {
+                ClearMeshColliders(m_MeshObject.transform);
+            }
+            else
+            {
+                DestroyImmediate(m_MeshObject.transform.Find("VHACD_Colliders"));
+            }
             m_Settings.MeshCountChild = 0;
             m_Settings.MeshCountTotal = 0;
             m_ColliderCoroutine = EditorCoroutineUtility.StartCoroutine(GenerateConvexMeshes(m_MeshObject), this);
@@ -517,35 +619,6 @@ namespace MeshProcess
                     DestroyImmediate(coll);
                 }
             }
-        }
-
-        /// <summary>
-        ///     Deletes all the content inside and the folder at that path, including the metafile
-        /// </summary>
-        /// <param name="path">Path of directory to delete</param>
-        static void DeleteDirectoryAndContents(string path)
-        {
-            var di = new DirectoryInfo(path);
-
-            if (!Directory.Exists(path))
-            {
-                return;
-            }
-
-            foreach (var file in di.GetFiles())
-            {
-                file.Delete();
-            }
-
-            foreach (var dir in di.GetDirectories())
-            {
-                dir.Delete(true);
-            }
-
-            Directory.Delete(path);
-            File.Delete($"{path}.meta");
-
-            AssetDatabase.Refresh();
         }
 
         /// <summary>
@@ -602,7 +675,7 @@ namespace MeshProcess
             // m_Parameters.m_oclAcceleration = (uint)EditorGUILayout.IntSlider(new GUIContent("OclAcceleration", ""),
             //     (int)m_Parameters.m_oclAcceleration, 0, 1);
             m_Parameters.m_maxConvexHulls =
-                (uint)EditorGUILayout.IntField("Max Convex Hulls per MeshRenderer", (int)m_Parameters.m_maxConvexHulls);
+                (uint)Mathf.Clamp(EditorGUILayout.IntField("Max Convex Hulls per MeshRenderer", (int)m_Parameters.m_maxConvexHulls), 0, int.MaxValue);
             m_Parameters.m_projectHullVertices = EditorGUILayout.Toggle(
                 new GUIContent("ProjectHullVertices",
                     "This will project the output convex hull vertices onto the original source mesh to increase the floating point accuracy of the results"),
