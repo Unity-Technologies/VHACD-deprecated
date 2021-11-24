@@ -430,14 +430,19 @@ namespace MeshProcess
                 }
 
                 // Save the Prefab.
-                if (m_Settings.NewCollidersChild && m_Settings.ChildDefaultOff)
+                var child = m_MeshObject.transform.Find("VHACD_Colliders");
+                if (child != null)
                 {
-                    var child = m_MeshObject.transform.Find("VHACD_Colliders");
-                    if (child != null)
+                    if (m_Settings.NewCollidersChild && m_Settings.ChildDefaultOff)
                     {
                         child.gameObject.SetActive(false);
                     }
+                    else if (!m_Settings.NewCollidersChild)
+                    {
+                        DestroyImmediate(child.gameObject);
+                    }
                 }
+
                 PrefabUtility.SaveAsPrefabAssetAndConnect(m_MeshObject, localPath, InteractionMode.AutomatedAction);
                 DestroyImmediate(m_MeshObject);
                 m_Settings.AssetsConverted++;
