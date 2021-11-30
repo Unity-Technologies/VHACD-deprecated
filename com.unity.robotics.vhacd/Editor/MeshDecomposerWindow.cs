@@ -19,6 +19,7 @@ namespace MeshProcess
         EditorCoroutine m_ColliderCoroutine;
         bool m_ShowBar;
         bool m_RunningGenerator;
+        const string k_ChildName = "VHACD_Colliders";
 
         void Awake()
         {
@@ -101,7 +102,10 @@ namespace MeshProcess
                     if (GUILayout.Button("Select Directory"))
                     {
                         m_Settings.AssetPath = EditorUtility.OpenFolderPanel("Select Asset Directory", "Assets", "");
-                        m_Settings.AssetSavePath = m_Settings.AssetPath.Substring(Application.dataPath.Length - "Assets".Length);
+                        if (m_Settings.AssetSavePath.Length > 0)
+                        {
+                            m_Settings.AssetSavePath = m_Settings.AssetPath.Substring(Application.dataPath.Length - "Assets".Length);
+                        }
                     }
 
                     EditorGUILayout.EndHorizontal();
@@ -201,7 +205,7 @@ namespace MeshProcess
                     m_Settings.TotalAssets = fileEnumerable.Count();
                     GUILayout.Label($"Assets found in directory: {m_Settings.TotalAssets}");
 
-                    GUI.enabled = true;
+                    GUI.enabled = !m_RunningGenerator;
                     if (GUILayout.Button("Generate!"))
                     {
                         m_ColliderCoroutine = EditorCoroutineUtility.StartCoroutine(OpenFiles(fileEnumerable), this);
@@ -251,7 +255,10 @@ namespace MeshProcess
         /// </summary>
         void OnHierarchyChange()
         {
-            if (m_Settings.GenerationMode == VhacdSettings.Mode.SingleMode) ResetGenerator();
+            if (m_Settings.GenerationMode == VhacdSettings.Mode.SingleMode && m_MeshObject != null)
+            {
+                ResetGenerator();
+            }
         }
 
         /// <summary>
@@ -275,8 +282,8 @@ namespace MeshProcess
         {
             var progress = m_Settings.AssetsConverted / m_Settings.TotalAssets;
             GUILayout.Label(
-                $"Converting asset {m_Settings.AssetsConverted} of {m_Settings.TotalAssets} => {m_Settings.CurrentFile}");
-            EditorGUI.ProgressBar(new Rect(3, 500, position.width - 6, 25), progress,
+                $"Converting asset {m_Settings.AssetsConverted + 1} of {m_Settings.TotalAssets} => {m_Settings.CurrentFile}");
+            EditorGUI.ProgressBar(new Rect(3, 550, position.width - 6, 25), progress,
                 $"{m_Settings.AssetsConverted}/{m_Settings.TotalAssets} Assets Converted");
             if (Math.Abs(progress - 1) < 0.01f)
             {
@@ -344,10 +351,20 @@ namespace MeshProcess
             m_Settings.CurrentFile = m_MeshObject.name;
             var meshFilters = m_MeshObject.GetComponentsInChildren<MeshFilter>();
 
+            // Destroy previous collider attempts
+            if (m_Settings.OverwriteMeshComponents)
+            {
+                var prev = m_MeshObject.transform.Find(k_ChildName);
+                if (prev != null)
+                {
+                    DestroyImmediate(prev.gameObject);
+                }
+            }
+
             if (m_Settings.NewCollidersChild)
             {
                 vhacdChild = Instantiate(go, m_MeshObject.transform, true);
-                vhacdChild.name = "VHACD_Colliders";
+                vhacdChild.name = k_ChildName;
                 ClearComponents(vhacdChild);
 
                 Selection.activeObject = vhacdChild;
@@ -430,7 +447,7 @@ namespace MeshProcess
                 }
 
                 // Save the Prefab.
-                var child = m_MeshObject.transform.Find("VHACD_Colliders");
+                var child = m_MeshObject.transform.Find(k_ChildName);
                 if (child != null)
                 {
                     if (m_Settings.NewCollidersChild && m_Settings.ChildDefaultOff)
@@ -463,7 +480,7 @@ namespace MeshProcess
         {
             foreach (var comp in go.GetComponents<Component>())
             {
-                if (!(comp is Transform) && !(comp is MeshFilter) && !(comp is Renderer))
+                if (!(comp is Transform) && !(comp is MeshFilter) && !(comp is Renderer) && !(comp is Rigidbody))
                 {
                     DestroyImmediate(comp);
                 }
@@ -479,6 +496,12 @@ namespace MeshProcess
             if (filter != null)
             {
                 DestroyImmediate(filter);
+            }
+
+            var rb = go.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                DestroyImmediate(rb);
             }
 
             foreach (Transform child in go.transform)
@@ -502,10 +525,13 @@ namespace MeshProcess
 
         void RevertPrefab()
         {
-            PrefabUtility.RevertPrefabInstance(m_ObjectField as GameObject);
-            DestroyImmediate(m_MeshObject);
-            var f = m_Settings.AssetPath;
-            ImportMesh(f);
+            if (m_ObjectField != null && m_Settings.GenerationMode == VhacdSettings.Mode.SingleMode)
+            {
+                PrefabUtility.RevertPrefabInstance(m_ObjectField as GameObject);
+                DestroyImmediate(m_MeshObject);
+                var f = m_Settings.AssetPath;
+                ImportMesh(f);
+            }
         }
 
         /// <summary>
@@ -516,7 +542,7 @@ namespace MeshProcess
             // Turn OFF VHACD colliders by default
             if (m_Settings.NewCollidersChild && m_Settings.ChildDefaultOff)
             {
-                var child = m_MeshObject.transform.Find("VHACD_Colliders");
+                var child = m_MeshObject.transform.Find(k_ChildName);
                 if (child != null)
                 {
                     child.gameObject.SetActive(false);
@@ -594,7 +620,11 @@ namespace MeshProcess
             }
             else
             {
-                DestroyImmediate(m_MeshObject.transform.Find("VHACD_Colliders"));
+                var childObj = m_MeshObject.transform.Find(k_ChildName);
+                if (childObj != null)
+                {
+                    DestroyImmediate(childObj.gameObject);
+                }
             }
             m_Settings.MeshCountChild = 0;
             m_Settings.MeshCountTotal = 0;
